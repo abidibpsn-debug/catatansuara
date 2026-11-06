@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catatan Suara</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.96); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes gentlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        @keyframes waveBounce {
+            0%, 100% { transform: scaleY(0.3); }
+            50% { transform: scaleY(1.4); }
+        }
+
+        @keyframes waveMoveLeftRight {
+            0% { transform: translateX(0) translateZ(0) scaleY(1); }
+            50% { transform: translateX(-25%) translateZ(0) scaleY(0.85); }
+            100% { transform: translateX(0) translateZ(0) scaleY(1); }
+        }
+
+        .animate-fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-pop-in { animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-toast-in { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-listening { animation: gentlePulse 1.5s infinite ease-in-out; }
+
+        .wave-bar { transition: height 0.15s ease-in-out, background-color 0.3s; }
+        .wave-bar-active { animation: waveBounce 1.2s ease-in-out infinite alternate; }
+
+        .water-wave-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 120px;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            opacity: 0.5;
+        }
+        .water-wave-svg {
+            width: 100%;
+            height: 100%;
+            animation: waveMoveLeftRight 12s ease-in-out infinite;
+        }
+
+        .task-card { transition: all 0.2s ease-in-out; }
+        .task-card:hover { transform: translateY(-2px); }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-200 flex h-screen overflow-hidden relative">
+
+    <!-- OVERLAY LOADING GLOBAL -->
+    <div id="global-loader" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden items-center justify-center z-50 transition-opacity p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-xl flex items-center space-x-3 border border-slate-200/60 dark:border-slate-700 animate-pop-in">
+            <svg class="animate-spin h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="loader-text" class="text-xs font-semibold text-slate-700 dark:text-slate-200">Memuat data...</span>
+        </div>
+    </div>
+
+    <!-- BACKDROP MOBILE SIDEBAR -->
+    <div id="sidebar-backdrop" onclick="closeMobileSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 hidden lg:hidden transition-opacity"></div>
+
+    <!-- SIDEBAR LEFT -->
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 sm:w-64 bg-white dark:bg-slate-800 border-r border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between shrink-0 z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none">
+        <div>
+            <!-- Header Brand -->
+            <div class="p-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
+                <div class="flex items-center space-x-3 min-w-0">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">CS</div>
+                    <div class="min-w-0">
+                        <h1 class="font-bold text-slate-800 dark:text-white text-base leading-tight truncate">Catatan Suara</h1>
+                    </div>
+                </div>
+                <button onclick="closeMobileSidebar()" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- AREA PEMILIHAN JURUSAN & STATUS -->
+            <div class="m-3 p-3 bg-slate-50/80 dark:bg-slate-900/50 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-2">
+                
+                <div id="major-select-box" class="space-y-2">
+                    <label for="select-major" class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block">Pilih Jurusan</label>
+                    <select id="select-major" class="w-full text-xs font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-400 cursor-pointer">
+                        <optgroup label="Teknik & Informatika">
+                            <option value="Magister Teknologi Informasi (S2)">Magister Teknologi Informasi (S2)</option>
+                            <option value="Sistem Informasi (S1)">Sistem Informasi (S1)</option>
+                            <option value="Teknologi Informasi (S1)">Teknologi Informasi (S1)</option>
+                            <option value="Rekayasa Perangkat Lunak (S1)">Rekayasa Perangkat Lunak (S1)</option>
+                            <option value="Ilmu Komputer (S1)">Ilmu Komputer (S1)</option>
+                            <option value="Informatika (S1)" selected>Informatika (S1)</option>
+                            <option value="Teknik Industri (S1)">Teknik Industri (S1)</option>
+                            <option value="Teknik Elektro (S1)">Teknik Elektro (S1)</option>
+                        </optgroup>
+                        <optgroup label="Komunikasi & Bahasa">
+                            <option value="Ilmu Komunikasi (S1)">Ilmu Komunikasi (S1)</option>
+                            <option value="Sastra Inggris (S1)">Sastra Inggris (S1)</option>
+                            <option value="DKV (S1)">DKV (S1)</option>
+                        </optgroup>
+                        <optgroup label="Ekonomi & Bisnis">
+                            <option value="Magister Manajemen (S2)">Magister Manajemen (S2)</option>
+                            <option value="Manajemen (S1)">Manajemen (S1)</option>
+                            <option value="Akuntansi (S1)">Akuntansi (S1)</option>
+                            <option value="Pariwisata (S1)">Pariwisata (S1)</option>
+                            <option value="Perhotelan (D3)">Perhotelan (D3)</option>
+                        </optgroup>
+                        <optgroup label="Hukum">
+                            <option value="Hukum Bisnis (S1)">Hukum Bisnis (S1)</option>
+                            <option value="Hukum (S1)">Hukum (S1)</option>
+                            <option value="Hubungan Internasional (S1)">Hubungan Internasional (S1)</option>
+                        </optgroup>
+                        <optgroup label="Ilmu Kesehatan">
+                            <option value="Keperawatan (D3)">Keperawatan (D3)</option>
+                            <option value="Psikologi (S1)">Psikologi (S1)</option>
+                        </optgroup>
+                    </select>
+                    <button onclick="confirmMajorSelection()" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center space-x-1.5 shadow-xs">
+                        <span>Konfirmasi Jurusan</span>
+                    </button>
+                </div>
+
+                <div id="major-confirmed-box" class="hidden space-y-2 animate-fade-in-up">
+                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block">Jurusan Aktif</span>
+                    <p id="confirmed-major-display" class="text-xs font-bold text-slate-800 dark:text-white bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-700 break-words">
+                        Jurusan Anda: Informatika (S1)
+                    </p>
+                    <button onclick="openResetMajorModal()" class="w-full bg-slate-200/70 dark:bg-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-600 dark:text-slate-300 text-[11px] font-semibold py-1.5 rounded-lg transition cursor-pointer">
+                        Mau memilih ulang jurusan?
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- NAVIGATION LINKS -->
+            <nav class="px-3 space-y-1">
+                <button onclick="switchTab('tasks')" id="nav-tasks" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer">
+                    <span class="flex items-center space-x-2.5 min-w-0">
+                        <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        <span class="truncate">Daftar Catatan</span>
+                    </span>
+                    <div class="flex items-center justify-end w-6 shrink-0 ml-2">
+                        <span id="task-count" class="h-5 min-w-[20px] px-1.5 flex items-center justify-center text-[11px] bg-indigo-100/80 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-full font-bold">0</span>
+                    </div>
+                </button>
+
+                <button onclick="switchTab('record')" id="nav-record" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer">
+                    <span class="flex items-center space-x-2.5 min-w-0">
+                        <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                        <span class="truncate">Rekam Suara Anda</span>
+                    </span>
+                    <div class="flex items-center justify-end w-6 shrink-0 ml-2">
+                        <span id="record-lock-badge" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+                    </div>
+                </button>
+
+                <div class="pt-3 mt-3 border-t border-slate-100 dark:border-slate-700/50">
+                    <button onclick="switchTab('trash')" id="nav-trash" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer">
+                        <span class="flex items-center space-x-2.5 min-w-0">
+                            <!-- IKON TEMPAT SAMPAH WARNA MERAH DI MENU SAMPAH -->
+                            <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            <span class="truncate">Sampah</span>
+                        </span>
+                        <div class="flex items-center justify-end w-6 shrink-0 ml-2">
+                            <span id="trash-count" class="h-5 min-w-[20px] px-1.5 flex items-center justify-center text-[11px] bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 rounded-full font-bold">0</span>
+                        </div>
+                    </button>
+                </div>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-slate-100 dark:border-slate-700/50 text-[11px] text-slate-400 dark:text-slate-500">
+            Gemini &copy; 2026
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto min-w-0 relative z-10">
+        
+        <!-- TOP HEADER -->
+        <header class="bg-white dark:bg-slate-800 border-b border-slate-200/80 dark:border-slate-700/80 px-4 lg:px-8 py-3.5 flex items-center justify-between sticky top-0 z-20 gap-2">
+            <div class="flex items-center space-x-3 min-w-0">
+                <button onclick="openMobileSidebar()" class="lg:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 transition cursor-pointer shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div class="min-w-0">
+                    <h2 id="header-title" class="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white leading-tight truncate">Daftar Catatan Perkuliahan</h2>
+                    <p id="current-major-label" class="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">Jurusan: Belum Dikonfirmasi</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-1.5 sm:space-x-2 lg:space-x-3 shrink-0">
+                <!-- TOGGLE MODE GELAP / TERANG -->
+                <button onclick="toggleDarkMode()" id="theme-toggle-btn" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer" title="Ubah Mode Tampilan">
+                    <svg id="sun-icon" class="w-4 h-4 hidden text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="moon-icon" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+
+                <button onclick="downloadTasks()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-2.5 sm:px-3 lg:px-4 py-2 rounded-lg flex items-center space-x-1.5 shadow-xs transition cursor-pointer" title="Download Catatan (.txt)">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span class="hidden sm:inline">Download</span>
+                </button>
+                <button onclick="openNewTaskModal()" class="bg-slate-800 dark:bg-indigo-600 hover:bg-slate-900 dark:hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold px-2.5 sm:px-3 lg:px-4 py-2 rounded-lg flex items-center space-x-1.5 shadow-xs transition cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Tambah</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENT VIEWS -->
+        <div class="p-4 lg:p-8 max-w-5xl w-full mx-auto space-y-4 lg:space-y-6 relative z-10 pb-24">
+
+            <!-- BANNER PENJELASAN PEMAKAIAN -->
+            <div id="usage-guide-banner" class="bg-slate-800 dark:bg-slate-800/90 text-slate-100 rounded-2xl p-5 shadow-sm relative overflow-hidden transition-all duration-300 animate-fade-in-up border border-slate-700/50">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+                    <div class="space-y-1.5 max-w-3xl">
+                        <div class="inline-flex items-center space-x-1.5 bg-slate-700 px-2.5 py-0.5 rounded-full text-[11px] text-slate-200 font-medium">
+                            <svg class="w-3.5 h-3.5 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Panduan Penggunaan</span>
+                        </div>
+                        <h3 class="text-sm lg:text-base font-bold text-white">Selamat Datang di Catatan Suara!</h3>
+                        <ol class="text-xs text-slate-300 space-y-1 list-decimal list-inside leading-relaxed">
+                            <li><b>Pilih & Konfirmasi Jurusan:</b> Pilih jurusan di menu sidebar, lalu klik <i>Konfirmasi Jurusan</i>.</li>
+                            <li><b>Rekam Suara Anda:</b> Klik menu rekam, tentukan judul, lalu tekan mikrofon merah untuk merekam.</li>
+                            <li><b>Tombol Selesai Dibaca:</b> Klik tombol di bawah kartu catatan untuk memunculkan konfirmasi status.</li>
+                            <li><b>Ubah Tampilan:</b> Klik tombol Bulan/Matahari di kanan atas untuk berpindah antara Mode Terang & Gelap.</li>
+                        </ol>
+                    </div>
+                    <button onclick="dismissGuideBanner()" class="bg-slate-700 hover:bg-slate-600 active:scale-95 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition cursor-pointer shrink-0 border border-slate-600">
+                        Saya Mengerti (Tutup)
+                    </button>
+                </div>
+            </div>
+            
+            <!-- VIEW 1: DAFTAR CATATAN -->
+            <section id="view-tasks" class="space-y-4 lg:space-y-6">
+                
+                <!-- STATISTIK & PROGRESS BAR CATATAN -->
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-3 animate-fade-in-up">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                            </div>
+                            <span class="text-xs font-bold text-slate-800 dark:text-white">Progress Membaca Catatan</span>
+                        </div>
+                        <span id="stat-percentage" class="text-xs font-bold text-indigo-600 dark:text-indigo-400">0% Selesai</span>
+                    </div>
+                    <!-- Progress Bar Track -->
+                    <div class="w-full bg-slate-100 dark:bg-slate-700/60 h-2 rounded-full overflow-hidden">
+                        <div id="stat-progress-bar" class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-medium pt-1">
+                        <span id="stat-completed-text">0 dari 0 catatan telah selesai dibaca</span>
+                        <span id="stat-active-text">Aktif</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+                    <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto">
+                        <button onclick="filterStatus('all')" id="filter-all" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0">Semua</button>
+                        <button onclick="filterStatus('pending')" id="filter-pending" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition shrink-0">Belum Selesai</button>
+                        <button onclick="filterStatus('completed')" id="filter-completed" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition shrink-0">Selesai Dibaca</button>
+                    </div>
+                    <input type="text" id="search-input" oninput="renderTasks()" placeholder="Cari catatan..." class="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 w-full sm:w-56 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200">
+                </div>
+
+                <div id="tasks-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
+                    <!-- Dynamic tasks -->
+                </div>
+            </section>
+
+            <!-- VIEW 2: CATATAN SUARA (CS) -->
+            <section id="view-record" class="hidden space-y-4 lg:space-y-6">
+                <div id="record-lock-warning" class="hidden bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 rounded-2xl p-6 text-center space-y-2 animate-pop-in">
+                    <div class="w-10 h-10 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <h4 class="text-sm font-bold text-amber-900 dark:text-amber-300">Fitur Catatan Suara Terkunci</h4>
+                    <p class="text-xs text-amber-700 dark:text-amber-400 max-w-md mx-auto">Anda belum mengonfirmasi jurusan. Harap konfirmasi jurusan Anda terlebih dahulu di menu sidebar untuk menggunakan rekam suara.</p>
+                </div>
+
+                <div id="record-main-box" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 p-5 lg:p-8 shadow-xs animate-fade-in-up">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-700/50 pb-4 mb-6 gap-2">
+                        <div>
+                            <h3 class="text-base lg:text-lg font-bold text-slate-800 dark:text-white">Perekam Catatan Suara (CS)</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tentukan judul, rekam suara Anda, lalu simpan menjadi catatan baru.</p>
+                        </div>
+                        <span id="active-major-badge" class="self-start sm:self-auto text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-600 truncate max-w-full">Belum Pilih Jurusan</span>
+                    </div>
+
+                    <!-- INPUT CUSTOM JUDUL CATATAN -->
+                    <div class="space-y-2 mb-4">
+                        <label for="record-title-input" class="text-xs font-semibold text-slate-700 dark:text-slate-300">Judul Catatan Suara</label>
+                        <input type="text" id="record-title-input" placeholder="Contoh: Pertemuan 1 - Kalkulus" class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200">
+                    </div>
+
+                    <div class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/60 rounded-xl p-6 lg:p-8 text-center space-y-5">
+                        
+                        <!-- WAVEFORM AUDIO LIVE -->
+                        <div id="wave-container" class="flex justify-center items-end space-x-2 h-14 py-2">
+                            <div class="wave-bar w-2 bg-slate-300 dark:bg-slate-700 h-4 rounded-full"></div>
+                            <div class="wave-bar w-2 bg-slate-300 dark:bg-slate-700 h-8 rounded-full"></div>
+                            <div class="wave-bar w-2 bg-slate-300 dark:bg-slate-700 h-5 rounded-full"></div>
+                            <div class="wave-bar w-2 bg-slate-300 dark:bg-slate-700 h-10 rounded-full"></div>
+                            <div class="wave-bar w-2 bg-slate-300 dark:bg-slate-700 h-4 rounded-full"></div>
+                        </div>
+
+                        <!-- TOMBOL REKAM SUARA -->
+                        <div class="flex justify-center">
+                            <button id="toggle-rec-btn" onclick="toggleRecording()" class="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-md transition-all duration-300 transform active:scale-95 cursor-pointer shrink-0" title="Klik untuk mulai rekam suara">
+                                <svg id="mic-icon" class="w-7 h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                                </svg>
+                                <div id="listening-icon" class="hidden items-center justify-center animate-listening">
+                                    <svg class="w-8 h-8 lg:w-10 lg:h-10 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.071 4.929a10 10 0 00-14.142 0M16.243 7.757a6 6 0 00-8.486 0" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 16c1.5 2.5 4 3 6 3 2.5 0 4.5-1.5 5.5-3.5M12 21v-2" />
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
+                        <p id="rec-status-text" class="text-xs text-slate-500 dark:text-slate-400 font-medium">Klik mikrofon merah untuk mulai merekam suara Anda.</p>
+                    </div>
+
+                    <div class="space-y-2 mt-5">
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Hasil Teks (Live):</label>
+                        <textarea id="transcript-result" rows="4" placeholder="Hasil suara Anda akan muncul di sini secara otomatis..." class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200"></textarea>
+                    </div>
+
+                    <div class="flex justify-end space-x-2.5 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                        <button onclick="clearTranscript()" class="px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer">Bersihkan</button>
+                        <button onclick="saveTranscriptToTask()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-800 dark:bg-indigo-600 hover:bg-slate-900 dark:hover:bg-indigo-700 text-white shadow-xs transition active:scale-95 flex items-center space-x-1.5 cursor-pointer">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            <span>Simpan Catatan</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 3: SAMPAH (TRASH) -->
+            <section id="view-trash" class="hidden space-y-4 lg:space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 p-5 lg:p-8 shadow-xs animate-fade-in-up">
+                    <div class="border-b border-slate-100 dark:border-slate-700/50 pb-3 mb-5">
+                        <h3 class="text-base lg:text-lg font-bold text-slate-800 dark:text-white">Sampah</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Catatan di bawah ini dapat dipulihkan kembali ke daftar catatan.</p>
+                    </div>
+                    <div id="trash-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
+                        <!-- Dynamic deleted items -->
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ANIMASI GELOMBANG AIR (WATER WAVE) -->
+    <div class="water-wave-container">
+        <svg class="water-wave-svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,0 C150,90 350,-40 550,50 C750,130 900,10 1200,40 L1200,120 L0,120 Z" class="fill-indigo-500/10 dark:fill-indigo-400/10"></path>
+            <path d="M0,20 C200,100 450,-20 650,60 C850,120 1000,20 1200,50 L1200,120 L0,120 Z" class="fill-indigo-400/15 dark:fill-indigo-500/15"></path>
+        </svg>
+    </div>
+
+    <!-- MODAL TAMBAH CATATAN -->
+    <div id="task-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 lg:p-6 w-full max-w-md shadow-xl space-y-4 animate-pop-in">
+            <h3 id="modal-heading" class="text-base font-bold text-slate-800 dark:text-white">Tambah Catatan Baru</h3>
+            <input type="hidden" id="modal-edit-id" value="">
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Judul Catatan / Mata Kuliah</label>
+                    <input type="text" id="modal-title" placeholder="Contoh: Pemrograman Web Lanjut" class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-400 text-slate-800 dark:text-slate-100">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Rincian Materi Catatan</label>
+                    <textarea id="modal-desc" rows="4" placeholder="Isikan materi penjelasan atau poin penting..." class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-400 text-slate-800 dark:text-slate-100"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-slate-700/50">
+                <button onclick="closeNewTaskModal()" class="px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg cursor-pointer transition">Batal</button>
+                <button onclick="saveManualTask()" class="px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-lg cursor-pointer transition">Simpan Catatan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ALERT DENGAN TITLE NAMA CATATAN -->
+    <div id="delete-confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 lg:p-6 w-full max-w-sm shadow-xl space-y-4 text-center animate-pop-in">
+            <div class="w-11 h-11 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-800 dark:text-white">Hapus Catatan?</h3>
+                <p id="delete-modal-title" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-2 bg-indigo-50 dark:bg-indigo-950/50 p-2 rounded-lg border border-indigo-100/80 dark:border-indigo-900/50 break-words">"1. CS - Catatan Suara"</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Catatan ini akan dipindahkan ke <b>Sampah</b>.</p>
+            </div>
+            <input type="hidden" id="delete-task-id" value="">
+            <div class="flex justify-center space-x-2.5 pt-1">
+                <button onclick="closeDeleteModal()" class="w-1/2 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg cursor-pointer transition">Batal</button>
+                <button onclick="confirmDeleteTask()" class="w-1/2 py-2 text-xs font-semibold bg-rose-600 hover:bg-rose-700 active:scale-95 text-white rounded-lg cursor-pointer transition">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ALERT KONFIRMASI MEMILIH ULANG JURUSAN -->
+    <div id="reset-major-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 lg:p-6 w-full max-w-sm shadow-xl space-y-4 text-center animate-pop-in">
+            <div class="w-11 h-11 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-800 dark:text-white">Memilih Ulang Jurusan?</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Daftar pilihan jurusan akan dibuka kembali agar Anda dapat mengganti jurusan aktif.</p>
+            </div>
+            <div class="flex justify-center space-x-2.5 pt-1">
+                <button onclick="closeResetMajorModal()" class="w-1/2 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg cursor-pointer transition">Batal</button>
+                <button onclick="confirmResetMajorSelection()" class="w-1/2 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-lg cursor-pointer transition">Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 dark:bg-slate-700 text-white text-xs px-4 py-3 rounded-xl shadow-lg hidden flex items-center space-x-2 z-50 pointer-events-none">
+        <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <span id="toast-message">Catatan berhasil disimpan!</span>
+    </div>
+
+    <script>
+        let currentMajor = '';
+        let isMajorConfirmed = false;
+        let tasks = [];
+
+        try {
+            const stored = localStorage.getItem('tn_tasks_all');
+            if (stored) tasks = JSON.parse(stored);
+        } catch(e) { console.error("Storage load error:", e); }
+
+        let currentFilter = 'all';
+        let isRecording = false;
+        let recognition = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = localStorage.getItem('tn_dark_mode') === 'true';
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('sun-icon').classList.remove('hidden');
+                document.getElementById('moon-icon').classList.add('hidden');
+            }
+
+            if (localStorage.getItem('tn_guide_dismissed') === 'true') {
+                const banner = document.getElementById('usage-guide-banner');
+                if (banner) banner.classList.add('hidden');
+            }
+
+            const storedMajor = localStorage.getItem('tn_current_major');
+            const storedConfirmed = localStorage.getItem('tn_is_major_confirmed');
+
+            if (storedConfirmed === 'true' && storedMajor) {
+                currentMajor = storedMajor;
+                isMajorConfirmed = true;
+
+                const selectElem = document.getElementById('select-major');
+                if (selectElem) selectElem.value = currentMajor;
+
+                document.getElementById('confirmed-major-display').innerText = `Jurusan Anda: ${currentMajor}`;
+                document.getElementById('current-major-label').innerText = `Jurusan: ${currentMajor}`;
+                document.getElementById('active-major-badge').innerText = currentMajor;
+
+                document.getElementById('major-select-box').classList.add('hidden');
+                document.getElementById('major-confirmed-box').classList.remove('hidden');
+                document.getElementById('record-lock-warning').classList.add('hidden');
+            }
+
+            renderTasks();
+            renderTrash();
+            initSpeechRecognition();
+        });
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const sun = document.getElementById('sun-icon');
+            const moon = document.getElementById('moon-icon');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                sun.classList.add('hidden');
+                moon.classList.remove('hidden');
+                localStorage.setItem('tn_dark_mode', 'false');
+            } else {
+                html.classList.add('dark');
+                sun.classList.remove('hidden');
+                moon.classList.add('hidden');
+                localStorage.setItem('tn_dark_mode', 'true');
+            }
+        }
+
+        function openMobileSidebar() {
+            document.getElementById('sidebar').classList.remove('-translate-x-full');
+            document.getElementById('sidebar-backdrop').classList.remove('hidden');
+        }
+
+        function closeMobileSidebar() {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('sidebar-backdrop').classList.add('hidden');
+        }
+
+        function dismissGuideBanner() {
+            const banner = document.getElementById('usage-guide-banner');
+            if (banner) {
+                banner.style.opacity = '0';
+                banner.style.transform = 'scale(0.96)';
+                setTimeout(() => {
+                    banner.classList.add('hidden');
+                    localStorage.setItem('tn_guide_dismissed', 'true');
+                }, 200);
+            }
+        }
+
+        function saveToStorage() {
+            try {
+                localStorage.setItem('tn_tasks_all', JSON.stringify(tasks));
+            } catch(e) { console.error("Storage save error:", e); }
+        }
+
+        function getNetworkDelay() {
+            if (!navigator.onLine) return -1;
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            if (conn) {
+                if (conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g') return 1800;
+                if (conn.effectiveType === '3g') return 1200;
+                if (conn.effectiveType === '4g') return 400;
+            }
+            return 500;
+        }
+
+        function showLoader(message, callback) {
+            const delay = getNetworkDelay();
+            if (delay === -1) {
+                alert('Koneksi terputus. Harap periksa jaringan internet Anda.');
+                return;
+            }
+
+            const loader = document.getElementById('global-loader');
+            const loaderText = document.getElementById('loader-text');
+            loaderText.innerText = message || 'Memuat data...';
+            
+            loader.classList.remove('hidden');
+            loader.classList.add('flex');
+
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                loader.classList.remove('flex');
+                if (callback) callback();
+            }, delay);
+        }
+
+        function confirmMajorSelection() {
+            showLoader('Mengubah ruang kerja jurusan...', () => {
+                const selectedVal = document.getElementById('select-major').value;
+                currentMajor = selectedVal;
+                isMajorConfirmed = true;
+                
+                localStorage.setItem('tn_current_major', currentMajor);
+                localStorage.setItem('tn_is_major_confirmed', 'true');
+
+                document.getElementById('confirmed-major-display').innerText = `Jurusan Anda: ${currentMajor}`;
+                document.getElementById('current-major-label').innerText = `Jurusan: ${currentMajor}`;
+                document.getElementById('active-major-badge').innerText = currentMajor;
+
+                document.getElementById('major-select-box').classList.add('hidden');
+                document.getElementById('major-confirmed-box').classList.remove('hidden');
+
+                document.getElementById('record-lock-warning').classList.add('hidden');
+
+                renderTasks();
+                renderTrash();
+                showToast(`Jurusan aktif: ${currentMajor}`);
+            });
+        }
+
+        function openResetMajorModal() {
+            const modal = document.getElementById('reset-major-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeResetMajorModal() {
+            const modal = document.getElementById('reset-major-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmResetMajorSelection() {
+            closeResetMajorModal();
+            showLoader('Membuka menu jurusan...', () => {
+                isMajorConfirmed = false;
+                localStorage.removeItem('tn_is_major_confirmed');
+
+                document.getElementById('current-major-label').innerText = `Jurusan: Belum Dikonfirmasi`;
+                document.getElementById('major-select-box').classList.remove('hidden');
+                document.getElementById('major-confirmed-box').classList.add('hidden');
+            });
+        }
+
+        function switchTab(tab) {
+            closeMobileSidebar();
+            showLoader('Memuat halaman...', () => {
+                document.getElementById('view-tasks').classList.add('hidden');
+                document.getElementById('view-record').classList.add('hidden');
+                document.getElementById('view-trash').classList.add('hidden');
+
+                document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
+                document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
+                document.getElementById('nav-trash').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
+
+                if (tab === 'tasks') {
+                    document.getElementById('view-tasks').classList.remove('hidden');
+                    document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer";
+                    document.getElementById('header-title').innerText = "Daftar Catatan Perkuliahan";
+                } else if (tab === 'record') {
+                    document.getElementById('view-record').classList.remove('hidden');
+                    document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer";
+                    document.getElementById('header-title').innerText = "Catatan Suara";
+                    
+                    if (!isMajorConfirmed) {
+                        document.getElementById('record-lock-warning').classList.remove('hidden');
+                    } else {
+                        document.getElementById('record-lock-warning').classList.add('hidden');
+                    }
+                } else if (tab === 'trash') {
+                    document.getElementById('view-trash').classList.remove('hidden');
+                    document.getElementById('nav-trash').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold text-white bg-rose-600 transition cursor-pointer shadow-xs";
+                    document.getElementById('header-title').innerText = "Folder Sampah";
+                    renderTrash();
+                }
+            });
+        }
+
+        function updateTaskStatistics(activeTasks) {
+            const total = activeTasks.length;
+            const completed = activeTasks.filter(t => t.completed).length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('stat-percentage').innerText = `${percentage}% Selesai`;
+            document.getElementById('stat-progress-bar').style.width = `${percentage}%`;
+            document.getElementById('stat-completed-text').innerText = `${completed} dari ${total} catatan telah selesai dibaca`;
+            document.getElementById('stat-active-text').innerText = currentMajor ? `Jurusan: ${currentMajor}` : 'Semua Jurusan';
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasks-container');
+            const searchInput = document.getElementById('search-input');
+            const searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
+            container.innerHTML = '';
+
+            let activeTasks = tasks.filter(t => (currentMajor ? t.major === currentMajor : true) && !t.deleted);
+
+            updateTaskStatistics(activeTasks);
+
+            let filtered = activeTasks.filter(t => {
+                const matchQuery = t.title.toLowerCase().includes(searchQuery) || t.desc.toLowerCase().includes(searchQuery);
+                if (currentFilter === 'pending') return matchQuery && !t.completed;
+                if (currentFilter === 'completed') return matchQuery && t.completed;
+                return matchQuery;
+            });
+
+            const countElem = document.getElementById('task-count');
+            if (countElem) countElem.innerText = activeTasks.length;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-1 sm:col-span-2 text-center py-10 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/80 animate-fade-in-up">
+                        <p class="text-xs text-slate-400 dark:text-slate-500">Belum ada catatan ${currentMajor ? 'untuk jurusan ' + escapeHtml(currentMajor) : ''}.</p>
+                    </div>`;
+                return;
+            }
+
+            filtered.forEach((task, index) => {
+                const card = document.createElement('div');
+                card.className = `task-card p-4 rounded-xl border flex flex-col justify-between animate-fade-in-up ${task.completed ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-700/40 opacity-75' : 'bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700/80 shadow-xs'}`;
+                card.style.animationDelay = `${index * 0.04}s`;
+                
+                card.innerHTML = `
+                    <div>
+                        <!-- Header Card dengan Nomor List & Tombol Edit/Hapus -->
+                        <div class="flex items-start justify-between">
+                            <div data-id="${task.id}" class="clickable-task-text cursor-pointer group flex-1 min-w-0 pr-2">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition break-words ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${index + 1}. ${escapeHtml(task.title)}</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed group-hover:text-slate-700 dark:group-hover:text-slate-300 transition break-words ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${escapeHtml(task.desc)}</p>
+                            </div>
+                            <div class="flex items-center space-x-1 shrink-0">
+                                <button data-id="${task.id}" class="edit-btn text-slate-400 hover:text-slate-800 dark:hover:text-white transition p-1 cursor-pointer hover:scale-110 active:scale-95" title="Edit Catatan">
+                                    <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </button>
+                                <button data-id="${task.id}" class="delete-btn text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 transition p-1 cursor-pointer hover:scale-110 active:scale-95" title="Hapus Catatan">
+                                    <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- GARIS PEMISAH DI DALAM CARD -->
+                        <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-end">
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0">${task.date}</span>
+                        </div>
+                    </div>
+
+                    <!-- TOMBOL SELESAI DIBACA DI BAGIAN BAWAH DALAM CARD -->
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
+                        <span class="text-[10px] font-semibold ${task.completed ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}">
+                            ${task.completed ? 'Status: Selesai Dibaca' : 'Status: Belum Dibaca'}
+                        </span>
+                        <button data-id="${task.id}" class="toggle-complete-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer active:scale-95 flex items-center space-x-1.5 ${task.completed ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'}">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${task.completed ? 'M6 18L18 6M6 6l12 12' : 'M5 13l4 4L19 7'}"></path></svg>
+                            <span>${task.completed ? 'Batalkan Selesai' : 'Selesai Dibaca'}</span>
+                        </button>
+                    </div>`;
+
+                container.appendChild(card);
+            });
+
+            document.querySelectorAll('.toggle-complete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = Number(e.currentTarget.getAttribute('data-id'));
+                    promptToggleTask(id);
+                });
+            });
+
+            document.querySelectorAll('.clickable-task-text').forEach(elem => {
+                elem.addEventListener('click', (e) => {
+                    const id = Number(e.currentTarget.getAttribute('data-id'));
+                    openEditTaskModal(id);
+                });
+            });
+
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = Number(e.currentTarget.getAttribute('data-id'));
+                    openEditTaskModal(id);
+                });
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = Number(e.currentTarget.getAttribute('data-id'));
+                    openDeleteModal(id);
+                });
+            });
+        }
+
+        function renderTrash() {
+            const container = document.getElementById('trash-container');
+            container.innerHTML = '';
+
+            let deletedTasks = tasks.filter(t => t.deleted);
+            document.getElementById('trash-count').innerText = deletedTasks.length;
+
+            if (deletedTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-1 sm:col-span-2 text-center py-10 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/80 animate-fade-in-up">
+                        <p class="text-xs text-slate-400 dark:text-slate-500">Tidak ada catatan di folder sampah.</p>
+                    </div>`;
+                return;
+            }
+
+            deletedTasks.forEach((task, index) => {
+                const card = document.createElement('div');
+                card.className = "task-card p-4 rounded-xl border border-rose-100 dark:border-rose-950 bg-rose-50/20 dark:bg-rose-950/20 flex flex-col justify-between animate-fade-in-up";
+                card.style.animationDelay = `${index * 0.04}s`;
+                
+                card.innerHTML = `
+                    <div class="min-w-0">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-[10px] font-semibold text-rose-500 uppercase tracking-wider truncate">Dari jurusan : ${escapeHtml(task.major)}</span>
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 shrink-0">${task.date}</span>
+                        </div>
+                        <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 mt-1 break-words">${index + 1}. ${escapeHtml(task.title)}</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed break-words">${escapeHtml(task.desc)}</p>
+                    </div>
+                    <div class="flex items-center justify-end space-x-2 mt-4 pt-3 border-t border-rose-100/80 dark:border-rose-900/40">
+                        <button onclick="restoreTask(${task.id})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg text-xs font-semibold transition cursor-pointer flex items-center space-x-1 shadow-xs shrink-0">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <span>Pulihkan</span>
+                        </button>
+                        <button onclick="permanentDeleteTask(${task.id})" class="px-3 py-1.5 bg-rose-100 dark:bg-rose-900/50 hover:bg-rose-200 dark:hover:bg-rose-900 active:scale-95 text-rose-700 dark:text-rose-300 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0">
+                            Hapus Permanen
+                        </button>
+                    </div>`;
+
+                container.appendChild(card);
+            });
+        }
+
+        function restoreTask(id) {
+            showLoader('Memulihkan catatan...', () => {
+                tasks = tasks.map(t => t.id === id ? { ...t, deleted: false } : t);
+                saveToStorage();
+                renderTasks();
+                renderTrash();
+                showToast('Catatan berhasil dipulihkan!');
+            });
+        }
+
+        function permanentDeleteTask(id) {
+            if (confirm('Hapus permanen catatan ini? Data tidak akan bisa dikembalikan lagi.')) {
+                showLoader('Menghapus permanen...', () => {
+                    tasks = tasks.filter(t => t.id !== id);
+                    saveToStorage();
+                    renderTasks();
+                    renderTrash();
+                    showToast('Catatan dihapus secara permanen.');
+                });
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function filterStatus(status) {
+            currentFilter = status;
+            document.getElementById('filter-all').className = status === 'all' ? "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0" : "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition shrink-0";
+            document.getElementById('filter-pending').className = status === 'pending' ? "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0" : "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition shrink-0";
+            document.getElementById('filter-completed').className = status === 'completed' ? "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0" : "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition shrink-0";
+            renderTasks();
+        }
+
+        function promptToggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            const isConfirmed = confirm(`Apakah ${task.title} selesai dibaca?\n----------------------------------------\nDari jurusan : ${task.major}`);
+            if (isConfirmed) {
+                toggleTask(id);
+            }
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+            saveToStorage();
+            renderTasks();
+            showToast('Status catatan diperbarui!');
+        }
+
+        function openDeleteModal(id) {
+            const activeTasks = tasks.filter(t => (currentMajor ? t.major === currentMajor : true) && !t.deleted);
+            const taskIndex = activeTasks.findIndex(t => t.id === id);
+            const task = activeTasks[taskIndex];
+            if (!task) return;
+
+            const displayNum = taskIndex !== -1 ? taskIndex + 1 : 1;
+
+            document.getElementById('delete-task-id').value = id;
+            document.getElementById('delete-modal-title').innerText = `"${displayNum}. ${task.title}"`;
+            
+            const modal = document.getElementById('delete-confirm-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('delete-confirm-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmDeleteTask() {
+            const id = Number(document.getElementById('delete-task-id').value);
+            closeDeleteModal();
+            showLoader('Memindahkan ke sampah...', () => {
+                tasks = tasks.map(t => t.id === id ? { ...t, deleted: true } : t);
+                saveToStorage();
+                renderTasks();
+                renderTrash();
+                showToast('Catatan dipindahkan ke folder Sampah');
+            });
+        }
+
+        function downloadTasks() {
+            showLoader('Menyiapkan file unduhan...', () => {
+                const majorTasks = tasks.filter(t => (currentMajor ? t.major === currentMajor : true) && !t.deleted);
+                if (majorTasks.length === 0) {
+                    alert(`Belum ada catatan aktif yang dapat diunduh.`);
+                    return;
+                }
+
+                let fileContent = `==================================================\n`;
+                fileContent += `  DAFTAR CATATAN PERKULIAHAN\n`;
+                fileContent += `  Jurusan : ${currentMajor || 'Semua Jurusan'}\n`;
+                fileContent += `  Tanggal : ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}\n`;
+                fileContent += `==================================================\n\n`;
+
+                majorTasks.forEach((t, index) => {
+                    fileContent += `${index + 1}. [${t.completed ? 'SELESAI DIBACA' : 'BELUM DIBACA'}] ${t.title}\n`;
+                    fileContent += `   Dari jurusan : ${t.major}\n`;
+                    fileContent += `   Tanggal  : ${t.date}\n`;
+                    fileContent += `   Catatan  : ${t.desc}\n`;
+                    fileContent += `--------------------------------------------------\n`;
+                });
+
+                const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `Catatan_${(currentMajor || 'Umum').replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast('File catatan berhasil diunduh!');
+            });
+        }
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'id-ID';
+
+                recognition.onstart = () => {
+                    isRecording = true;
+                    document.getElementById('rec-status-text').innerText = 'Sedang mendengarkan suara... Silakan bicara.';
+                    
+                    const btn = document.getElementById('toggle-rec-btn');
+                    btn.className = "w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-slate-900 dark:bg-indigo-600 text-white flex items-center justify-center shadow-lg transition-all duration-300 transform scale-105 cursor-pointer ring-4 ring-indigo-500/40 shrink-0";
+                    
+                    document.getElementById('mic-icon').classList.add('hidden');
+                    document.getElementById('listening-icon').classList.remove('hidden');
+                    document.getElementById('listening-icon').classList.add('flex');
+
+                    const bars = document.querySelectorAll('.wave-bar');
+                    const colors = ['bg-indigo-500', 'bg-pink-500', 'bg-emerald-400', 'bg-indigo-400', 'bg-purple-500'];
+                    bars.forEach((bar, idx) => {
+                        bar.className = `wave-bar w-2 h-10 rounded-full wave-bar-active ${colors[idx % colors.length]}`;
+                        bar.style.animationDelay = `${(idx * 0.25)}s`;
+                    });
+                };
+
+                recognition.onresult = (event) => {
+                    let transcript = '';
+                    for (let i = 0; i < event.results.length; ++i) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                    document.getElementById('transcript-result').value = transcript;
+                };
+
+                recognition.onerror = (event) => {
+                    console.error("Speech Error: ", event.error);
+                    stopRecording();
+                    if (event.error === 'not-allowed') {
+                        alert('Akses Mikrofon Ditolak! Harap izinkan akses mikrofon pada browser.');
+                    }
+                };
+
+                recognition.onend = () => { stopRecording(); };
+            }
+        }
+
+        function toggleRecording() {
+            if (!isMajorConfirmed) {
+                alert('Akses Ditolak: Anda wajib memilih dan mengonfirmasi jurusan terlebih dahulu di menu sidebar sebelum merekam suara!');
+                return;
+            }
+
+            if (!recognition) {
+                alert('Browser ini tidak mendukung Web Speech API. Harap gunakan Google Chrome atau Microsoft Edge.');
+                return;
+            }
+            if (isRecording) {
+                stopRecording();
+            } else {
+                try { recognition.start(); } catch (err) { stopRecording(); }
+            }
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            if (recognition) { try { recognition.stop(); } catch(e){} }
+            
+            document.getElementById('rec-status-text').innerText = 'Klik mikrofon merah untuk mulai merekam suara Anda.';
+            
+            const btn = document.getElementById('toggle-rec-btn');
+            btn.className = "w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-md transition-all duration-300 transform active:scale-95 cursor-pointer shrink-0";
+            
+            document.getElementById('mic-icon').classList.remove('hidden');
+            document.getElementById('listening-icon').classList.add('hidden');
+            document.getElementById('listening-icon').classList.remove('flex');
+
+            const bars = document.querySelectorAll('.wave-bar');
+            bars.forEach((bar, idx) => {
+                bar.className = "wave-bar w-2 bg-slate-300 dark:bg-slate-700 rounded-full";
+                bar.style.animationDelay = "0s";
+                if(idx === 0) bar.className += " h-4";
+                else if(idx === 1) bar.className += " h-8";
+                else if(idx === 2) bar.className += " h-5";
+                else if(idx === 3) bar.className += " h-10";
+                else bar.className += " h-4";
+            });
+        }
+
+        function clearTranscript() {
+            document.getElementById('transcript-result').value = '';
+            document.getElementById('record-title-input').value = '';
+        }
+
+        function saveTranscriptToTask() {
+            if (!isMajorConfirmed) {
+                alert('Tidak dapat menyimpan: Harap konfirmasi jurusan Anda terlebih dahulu!');
+                return;
+            }
+
+            const customTitle = document.getElementById('record-title-input').value.trim();
+            const text = document.getElementById('transcript-result').value.trim();
+
+            if (!customTitle) {
+                alert('Judul catatan suara tidak boleh kosong! Harap masukkan judul terlebih dahulu.');
+                return;
+            }
+
+            if (!text) {
+                alert('Belum ada teks transkripsi yang dapat disimpan!');
+                return;
+            }
+
+            if (isRecording) {
+                stopRecording();
+            }
+
+            showLoader('Menyimpan catatan suara...', () => {
+                const newTask = {
+                    id: Date.now(),
+                    major: currentMajor,
+                    title: customTitle,
+                    desc: text,
+                    completed: false,
+                    deleted: false,
+                    date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+                };
+
+                tasks.unshift(newTask);
+                saveToStorage();
+                clearTranscript();
+                
+                document.getElementById('view-tasks').classList.remove('hidden');
+                document.getElementById('view-record').classList.add('hidden');
+                document.getElementById('view-trash').classList.add('hidden');
+                document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer";
+                document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
+                document.getElementById('header-title').innerText = "Daftar Catatan Perkuliahan";
+                
+                renderTasks();
+                renderTrash();
+                showToast(`Catatan suara berhasil disimpan ke ${currentMajor}!`);
+            });
+        }
+
+        function openNewTaskModal() {
+            document.getElementById('modal-heading').innerText = 'Tambah Catatan Baru';
+            document.getElementById('modal-edit-id').value = '';
+            document.getElementById('modal-title').value = '';
+            document.getElementById('modal-desc').value = '';
+
+            const modal = document.getElementById('task-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function openEditTaskModal(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            document.getElementById('modal-heading').innerText = 'Edit Catatan';
+            document.getElementById('modal-edit-id').value = task.id;
+            document.getElementById('modal-title').value = task.title;
+            document.getElementById('modal-desc').value = task.desc;
+
+            const modal = document.getElementById('task-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeNewTaskModal() {
+            const modal = document.getElementById('task-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveManualTask() {
+            const editId = document.getElementById('modal-edit-id').value;
+            const titleInput = document.getElementById('modal-title');
+            const descInput = document.getElementById('modal-desc');
+
+            const title = titleInput.value.trim();
+            const desc = descInput.value.trim();
+
+            if (!title) { alert('Judul catatan tidak boleh kosong!'); return; }
+
+            showLoader('Menyimpan perubahan...', () => {
+                if (editId) {
+                    tasks = tasks.map(t => t.id === Number(editId) ? { ...t, title: title, desc: desc || 'Tidak ada deskripsi tambahan.' } : t);
+                    showToast('Catatan berhasil diperbarui!');
+                } else {
+                    tasks.unshift({
+                        id: Date.now(),
+                        major: currentMajor || 'Umum',
+                        title: title,
+                        desc: desc || 'Tidak ada deskripsi tambahan.',
+                        completed: false,
+                        deleted: false,
+                        date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+                    });
+                    showToast('Catatan baru berhasil ditambahkan');
+                }
+
+                saveToStorage();
+                closeNewTaskModal();
+                renderTasks();
+                renderTrash();
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('hidden');
+            toast.classList.add('animate-toast-in');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('animate-toast-in');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
