@@ -36,6 +36,11 @@
             50% { transform: scale(1.08); }
         }
 
+        @keyframes slowBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
         @keyframes waveBounce {
             0%, 100% { transform: scaleY(0.3); }
             50% { transform: scaleY(1.4); }
@@ -51,6 +56,7 @@
         .animate-pop-in { animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-toast-in { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-listening { animation: gentlePulse 1.5s infinite ease-in-out; }
+        .animate-slow-blink { animation: slowBlink 2s infinite ease-in-out; }
 
         .wave-bar { transition: height 0.15s ease-in-out, background-color 0.3s; }
         .wave-bar-active { animation: waveBounce 1.2s ease-in-out infinite alternate; }
@@ -94,11 +100,8 @@
         </div>
     </div>
 
-    <!-- BACKDROP MOBILE SIDEBAR -->
-    <div id="sidebar-backdrop" onclick="closeMobileSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 hidden lg:hidden transition-opacity"></div>
-
-    <!-- SIDEBAR LEFT -->
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 sm:w-64 bg-white dark:bg-slate-800 border-r border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between shrink-0 z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none">
+    <!-- SIDEBAR LEFT (HANYA MUNCUL DI LAYAR DESKTOP / PC DENGAN lg:flex, DISEMBUNYIKAN DI HP) -->
+    <aside id="sidebar" class="hidden lg:flex w-64 bg-white dark:bg-slate-800 border-r border-slate-200/80 dark:border-slate-700/80 flex-col justify-between shrink-0 z-40 shadow-none">
         <div>
             <!-- Header Brand -->
             <div class="p-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
@@ -108,9 +111,6 @@
                         <h1 class="font-bold text-slate-800 dark:text-white text-base leading-tight truncate">Catatan Suara</h1>
                     </div>
                 </div>
-                <button onclick="closeMobileSidebar()" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
             </div>
 
             <!-- AREA PEMILIHAN JURUSAN & STATUS -->
@@ -157,7 +157,7 @@
                 </div>
 
                 <div id="major-confirmed-box" class="hidden space-y-2 animate-fade-in-up">
-                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block">Jurusan Aktif</span>
+                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block">JURUSAN</span>
                     <p id="confirmed-major-display" class="text-xs font-bold text-slate-800 dark:text-white bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-700 break-words">
                         Jurusan Anda: Informatika (S1)
                     </p>
@@ -183,17 +183,13 @@
                 <button onclick="switchTab('record')" id="nav-record" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer">
                     <span class="flex items-center space-x-2.5 min-w-0">
                         <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
-                        <span class="truncate">Rekam Suara Anda</span>
+                        <span class="truncate animate-slow-blink">Rekam Suara Anda</span>
                     </span>
-                    <div class="flex items-center justify-end w-6 shrink-0 ml-2">
-                        <span id="record-lock-badge" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
-                    </div>
                 </button>
 
                 <div class="pt-3 mt-3 border-t border-slate-100 dark:border-slate-700/50">
                     <button onclick="switchTab('trash')" id="nav-trash" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer">
                         <span class="flex items-center space-x-2.5 min-w-0">
-                            <!-- IKON TEMPAT SAMPAH WARNA MERAH DI MENU SAMPAH -->
                             <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             <span class="truncate">Sampah</span>
                         </span>
@@ -205,20 +201,22 @@
             </nav>
         </div>
 
-        <div class="p-4 border-t border-slate-100 dark:border-slate-700/50 text-[11px] text-slate-400 dark:text-slate-500">
-            Gemini &copy; 2026
+        <!-- FOOTER SIDEBAR KHUSUS PC / LAPTOP -->
+        <div class="p-4 border-t border-slate-100 dark:border-slate-700/50 space-y-2 text-xs text-slate-500 dark:text-slate-400">
+            <div id="pc-live-clock" class="font-bold text-indigo-600 dark:text-indigo-400 leading-snug">Hari : Memuat waktu...</div>
+            <div class="pt-1.5 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between font-medium">
+                <span>Gemini &copy; 2026</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Online"></span>
+            </div>
         </div>
     </aside>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 flex flex-col h-screen overflow-y-auto min-w-0 relative z-10">
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto min-w-0 relative z-10 pb-28 lg:pb-8">
         
         <!-- TOP HEADER -->
         <header class="bg-white dark:bg-slate-800 border-b border-slate-200/80 dark:border-slate-700/80 px-4 lg:px-8 py-3.5 flex items-center justify-between sticky top-0 z-20 gap-2">
             <div class="flex items-center space-x-3 min-w-0">
-                <button onclick="openMobileSidebar()" class="lg:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 transition cursor-pointer shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
                 <div class="min-w-0">
                     <h2 id="header-title" class="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white leading-tight truncate">Daftar Catatan Perkuliahan</h2>
                     <p id="current-major-label" class="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">Jurusan: Belum Dikonfirmasi</p>
@@ -226,25 +224,74 @@
             </div>
             
             <div class="flex items-center space-x-1.5 sm:space-x-2 lg:space-x-3 shrink-0">
-                <!-- TOGGLE MODE GELAP / TERANG -->
+                <!-- TOMBOL MODE GELAP / TERANG -->
                 <button onclick="toggleDarkMode()" id="theme-toggle-btn" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer" title="Ubah Mode Tampilan">
                     <svg id="sun-icon" class="w-4 h-4 hidden text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <svg id="moon-icon" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
 
-                <button onclick="downloadTasks()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-2.5 sm:px-3 lg:px-4 py-2 rounded-lg flex items-center space-x-1.5 shadow-xs transition cursor-pointer" title="Download Catatan (.txt)">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    <span class="hidden sm:inline">Download</span>
-                </button>
                 <button onclick="openNewTaskModal()" class="bg-slate-800 dark:bg-indigo-600 hover:bg-slate-900 dark:hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold px-2.5 sm:px-3 lg:px-4 py-2 rounded-lg flex items-center space-x-1.5 shadow-xs transition cursor-pointer">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    <span>Tambah</span>
+                    <span>Tambah Catatan Manual</span>
                 </button>
             </div>
         </header>
 
         <!-- CONTENT VIEWS -->
-        <div class="p-4 lg:p-8 max-w-5xl w-full mx-auto space-y-4 lg:space-y-6 relative z-10 pb-24">
+        <div class="p-4 lg:p-8 max-w-5xl w-full mx-auto space-y-4 lg:space-y-6 relative z-10">
+
+            <!-- BANNER PEMILIHAN JURUSAN KHUSUS MOBILE (KARENA SIDEBAR DISEMBUNYIKAN DI HP) -->
+            <div class="lg:hidden bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-3">
+                <div id="mobile-major-select-box" class="space-y-2">
+                    <label for="mobile-select-major" class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block">Pilih Jurusan Kuliah</label>
+                    <select id="mobile-select-major" class="w-full text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-400 cursor-pointer">
+                        <optgroup label="Teknik & Informatika">
+                            <option value="Magister Teknologi Informasi (S2)">Magister Teknologi Informasi (S2)</option>
+                            <option value="Sistem Informasi (S1)">Sistem Informasi (S1)</option>
+                            <option value="Teknologi Informasi (S1)">Teknologi Informasi (S1)</option>
+                            <option value="Rekayasa Perangkat Lunak (S1)">Rekayasa Perangkat Lunak (S1)</option>
+                            <option value="Ilmu Komputer (S1)">Ilmu Komputer (S1)</option>
+                            <option value="Informatika (S1)" selected>Informatika (S1)</option>
+                            <option value="Teknik Industri (S1)">Teknik Industri (S1)</option>
+                            <option value="Teknik Elektro (S1)">Teknik Elektro (S1)</option>
+                        </optgroup>
+                        <optgroup label="Komunikasi & Bahasa">
+                            <option value="Ilmu Komunikasi (S1)">Ilmu Komunikasi (S1)</option>
+                            <option value="Sastra Inggris (S1)">Sastra Inggris (S1)</option>
+                            <option value="DKV (S1)">DKV (S1)</option>
+                        </optgroup>
+                        <optgroup label="Ekonomi & Bisnis">
+                            <option value="Magister Manajemen (S2)">Magister Manajemen (S2)</option>
+                            <option value="Manajemen (S1)">Manajemen (S1)</option>
+                            <option value="Akuntansi (S1)">Akuntansi (S1)</option>
+                            <option value="Pariwisata (S1)">Pariwisata (S1)</option>
+                            <option value="Perhotelan (D3)">Perhotelan (D3)</option>
+                        </optgroup>
+                        <optgroup label="Hukum">
+                            <option value="Hukum Bisnis (S1)">Hukum Bisnis (S1)</option>
+                            <option value="Hukum (S1)">Hukum (S1)</option>
+                            <option value="Hubungan Internasional (S1)">Hubungan Internasional (S1)</option>
+                        </optgroup>
+                        <optgroup label="Ilmu Kesehatan">
+                            <option value="Keperawatan (D3)">Keperawatan (D3)</option>
+                            <option value="Psikologi (S1)">Psikologi (S1)</option>
+                        </optgroup>
+                    </select>
+                    <button onclick="confirmMobileMajorSelection()" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold py-2.5 rounded-lg transition-all cursor-pointer flex items-center justify-center space-x-1.5 shadow-xs">
+                        <span>Konfirmasi Jurusan</span>
+                    </button>
+                </div>
+
+                <div id="mobile-major-confirmed-box" class="hidden space-y-2">
+                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block">JURUSAN</span>
+                    <p id="mobile-confirmed-major-display" class="text-xs font-bold text-slate-800 dark:text-white bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-700 break-words">
+                        Jurusan Anda: Informatika (S1)
+                    </p>
+                    <button onclick="openResetMajorModal()" class="w-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 active:scale-95 text-slate-600 dark:text-slate-300 text-[11px] font-semibold py-1.5 rounded-lg transition cursor-pointer">
+                        Mau memilih ulang jurusan?
+                    </button>
+                </div>
+            </div>
 
             <!-- BANNER PENJELASAN PEMAKAIAN -->
             <div id="usage-guide-banner" class="bg-slate-800 dark:bg-slate-800/90 text-slate-100 rounded-2xl p-5 shadow-sm relative overflow-hidden transition-all duration-300 animate-fade-in-up border border-slate-700/50">
@@ -256,9 +303,9 @@
                         </div>
                         <h3 class="text-sm lg:text-base font-bold text-white">Selamat Datang di Catatan Suara!</h3>
                         <ol class="text-xs text-slate-300 space-y-1 list-decimal list-inside leading-relaxed">
-                            <li><b>Pilih & Konfirmasi Jurusan:</b> Pilih jurusan di menu sidebar, lalu klik <i>Konfirmasi Jurusan</i>.</li>
-                            <li><b>Rekam Suara Anda:</b> Klik menu rekam, tentukan judul, lalu tekan mikrofon merah untuk merekam.</li>
-                            <li><b>Tombol Selesai Dibaca:</b> Klik tombol di bawah kartu catatan untuk memunculkan konfirmasi status.</li>
+                            <li><b>Pilih & Konfirmasi Jurusan:</b> Pilih jurusan Anda, lalu klik <i>Konfirmasi Jurusan</i>.</li>
+                            <li><b>Rekam Suara Anda:</b> Tentukan judul, rekam suara, lalu simpan.</li>
+                            <li><b>Download Satuan:</b> Klik ikon download pada tiap kartu catatan untuk mengunduh catatan tersebut secara terpisah.</li>
                             <li><b>Ubah Tampilan:</b> Klik tombol Bulan/Matahari di kanan atas untuk berpindah antara Mode Terang & Gelap.</li>
                         </ol>
                     </div>
@@ -313,7 +360,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
                     <h4 class="text-sm font-bold text-amber-900 dark:text-amber-300">Fitur Catatan Suara Terkunci</h4>
-                    <p class="text-xs text-amber-700 dark:text-amber-400 max-w-md mx-auto">Anda belum mengonfirmasi jurusan. Harap konfirmasi jurusan Anda terlebih dahulu di menu sidebar untuk menggunakan rekam suara.</p>
+                    <p class="text-xs text-amber-700 dark:text-amber-400 max-w-md mx-auto">Anda belum mengonfirmasi jurusan. Harap konfirmasi jurusan Anda terlebih dahulu untuk menggunakan rekam suara.</p>
                 </div>
 
                 <div id="record-main-box" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 p-5 lg:p-8 shadow-xs animate-fade-in-up">
@@ -328,7 +375,7 @@
                     <!-- INPUT CUSTOM JUDUL CATATAN -->
                     <div class="space-y-2 mb-4">
                         <label for="record-title-input" class="text-xs font-semibold text-slate-700 dark:text-slate-300">Judul Catatan Suara</label>
-                        <input type="text" id="record-title-input" placeholder="Contoh: Pertemuan 1 - Kalkulus" class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200">
+                        <input type="text" id="record-title-input" placeholder="Contoh: Pertemuan 1 - Pengantar Algoritma" class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200">
                     </div>
 
                     <div class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/60 rounded-xl p-6 lg:p-8 text-center space-y-5">
@@ -380,7 +427,7 @@
                 <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 p-5 lg:p-8 shadow-xs animate-fade-in-up">
                     <div class="border-b border-slate-100 dark:border-slate-700/50 pb-3 mb-5">
                         <h3 class="text-base lg:text-lg font-bold text-slate-800 dark:text-white">Sampah</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Catatan di bawah ini dapat dipulihkan kembali ke daftar catatan.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Catatan di bawah ini dapat dipulihkan kembali ke daftar catatan aktif.</p>
                     </div>
                     <div id="trash-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
                         <!-- Dynamic deleted items -->
@@ -390,6 +437,30 @@
 
         </div>
     </main>
+
+    <!-- BOTTOM NAVBAR MOBILE (HANYA MUNCUL DI MOBILE / TABLET DENGAN lg:hidden) -->
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-700/80 px-4 py-2.5 z-40 flex flex-col space-y-1.5 shadow-lg">
+        <!-- Menu Navigasi Bawah dengan Nama & Efek Kedap-Kedip yang Sama -->
+        <div class="flex items-center justify-around">
+            <button onclick="switchTab('tasks')" id="mobile-nav-tasks" class="flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer">
+                <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <span>Daftar Catatan</span>
+            </button>
+            <button onclick="switchTab('record')" id="mobile-nav-record" class="flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer">
+                <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                <span class="animate-slow-blink">Rekam Suara Anda</span>
+            </button>
+            <button onclick="switchTab('trash')" id="mobile-nav-trash" class="flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-rose-500 transition cursor-pointer">
+                <svg class="w-4 h-4 mb-0.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                <span>Sampah</span>
+            </button>
+        </div>
+        <!-- Copyright & Live Date Time -->
+        <div class="pt-1.5 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 font-medium px-1">
+            <span id="mobile-live-clock">Hari : Memuat waktu...</span>
+            <span class="text-slate-400">Gemini &copy; 2026</span>
+        </div>
+    </div>
 
     <!-- ANIMASI GELOMBANG AIR (WATER WAVE) -->
     <div class="water-wave-container">
@@ -430,7 +501,7 @@
             <div>
                 <h3 class="text-base font-bold text-slate-800 dark:text-white">Hapus Catatan?</h3>
                 <p id="delete-modal-title" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-2 bg-indigo-50 dark:bg-indigo-950/50 p-2 rounded-lg border border-indigo-100/80 dark:border-indigo-900/50 break-words">"1. CS - Catatan Suara"</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Catatan ini akan dipindahkan ke <b>Sampah</b>.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Catatan ini akan dipindahkan ke folder <b>Sampah</b>.</p>
             </div>
             <input type="hidden" id="delete-task-id" value="">
             <div class="flex justify-center space-x-2.5 pt-1">
@@ -448,7 +519,7 @@
             </div>
             <div>
                 <h3 class="text-base font-bold text-slate-800 dark:text-white">Memilih Ulang Jurusan?</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Daftar pilihan jurusan akan dibuka kembali agar Anda dapat mengganti jurusan aktif.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Daftar pilihan jurusan akan dibuka kembali agar Anda dapat mengganti jurusan.</p>
             </div>
             <div class="flex justify-center space-x-2.5 pt-1">
                 <button onclick="closeResetMajorModal()" class="w-1/2 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg cursor-pointer transition">Batal</button>
@@ -458,7 +529,7 @@
     </div>
 
     <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 dark:bg-slate-700 text-white text-xs px-4 py-3 rounded-xl shadow-lg hidden flex items-center space-x-2 z-50 pointer-events-none">
+    <div id="toast" class="fixed bottom-20 right-5 bg-slate-800 dark:bg-slate-700 text-white text-xs px-4 py-3 rounded-xl shadow-lg hidden flex items-center space-x-2 z-50 pointer-events-none">
         <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
         <span id="toast-message">Catatan berhasil disimpan!</span>
     </div>
@@ -500,19 +571,45 @@
                 const selectElem = document.getElementById('select-major');
                 if (selectElem) selectElem.value = currentMajor;
 
+                const mobileSelectElem = document.getElementById('mobile-select-major');
+                if (mobileSelectElem) mobileSelectElem.value = currentMajor;
+
                 document.getElementById('confirmed-major-display').innerText = `Jurusan Anda: ${currentMajor}`;
+                document.getElementById('mobile-confirmed-major-display').innerText = `Jurusan Anda: ${currentMajor}`;
                 document.getElementById('current-major-label').innerText = `Jurusan: ${currentMajor}`;
                 document.getElementById('active-major-badge').innerText = currentMajor;
 
                 document.getElementById('major-select-box').classList.add('hidden');
                 document.getElementById('major-confirmed-box').classList.remove('hidden');
+                document.getElementById('mobile-major-select-box').classList.add('hidden');
+                document.getElementById('mobile-major-confirmed-box').classList.remove('hidden');
                 document.getElementById('record-lock-warning').classList.add('hidden');
             }
 
             renderTasks();
             renderTrash();
             initSpeechRecognition();
+            updateLiveClocks();
+            setInterval(updateLiveClocks, 1000);
         });
+
+        function updateLiveClocks() {
+            const now = new Date();
+            const dayName = now.toLocaleDateString('id-ID', { weekday: 'long' });
+            const monthName = now.toLocaleDateString('id-ID', { month: 'long' });
+            const dateNum = now.getDate();
+            const year = now.getFullYear();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':');
+            
+            const mobileText = `Hari : ${dayName}, ${dateNum} ${monthName} ${year} | ${timeStr}`;
+            const pcText = `📅 Hari: ${dayName}\n⏰ Jam: ${timeStr}\n🗓️ ${dateNum} ${monthName} ${year}`;
+            
+            const mobileClock = document.getElementById('mobile-live-clock');
+            if (mobileClock) mobileClock.innerText = mobileText;
+
+            const pcClock = document.getElementById('pc-live-clock');
+            if (pcClock) pcClock.innerText = pcText;
+        }
 
         function toggleDarkMode() {
             const html = document.documentElement;
@@ -530,16 +627,6 @@
                 moon.classList.add('hidden');
                 localStorage.setItem('tn_dark_mode', 'true');
             }
-        }
-
-        function openMobileSidebar() {
-            document.getElementById('sidebar').classList.remove('-translate-x-full');
-            document.getElementById('sidebar-backdrop').classList.remove('hidden');
-        }
-
-        function closeMobileSidebar() {
-            document.getElementById('sidebar').classList.add('-translate-x-full');
-            document.getElementById('sidebar-backdrop').classList.add('hidden');
         }
 
         function dismissGuideBanner() {
@@ -593,8 +680,17 @@
         }
 
         function confirmMajorSelection() {
+            const selectedVal = document.getElementById('select-major').value;
+            applyMajorConfirmation(selectedVal);
+        }
+
+        function confirmMobileMajorSelection() {
+            const selectedVal = document.getElementById('mobile-select-major').value;
+            applyMajorConfirmation(selectedVal);
+        }
+
+        function applyMajorConfirmation(selectedVal) {
             showLoader('Mengubah ruang kerja jurusan...', () => {
-                const selectedVal = document.getElementById('select-major').value;
                 currentMajor = selectedVal;
                 isMajorConfirmed = true;
                 
@@ -602,17 +698,20 @@
                 localStorage.setItem('tn_is_major_confirmed', 'true');
 
                 document.getElementById('confirmed-major-display').innerText = `Jurusan Anda: ${currentMajor}`;
+                document.getElementById('mobile-confirmed-major-display').innerText = `Jurusan Anda: ${currentMajor}`;
                 document.getElementById('current-major-label').innerText = `Jurusan: ${currentMajor}`;
                 document.getElementById('active-major-badge').innerText = currentMajor;
 
                 document.getElementById('major-select-box').classList.add('hidden');
                 document.getElementById('major-confirmed-box').classList.remove('hidden');
+                document.getElementById('mobile-major-select-box').classList.add('hidden');
+                document.getElementById('mobile-major-confirmed-box').classList.remove('hidden');
 
                 document.getElementById('record-lock-warning').classList.add('hidden');
 
                 renderTasks();
                 renderTrash();
-                showToast(`Jurusan aktif: ${currentMajor}`);
+                showToast(`Jurusan: ${currentMajor}`);
             });
         }
 
@@ -637,27 +736,36 @@
                 document.getElementById('current-major-label').innerText = `Jurusan: Belum Dikonfirmasi`;
                 document.getElementById('major-select-box').classList.remove('hidden');
                 document.getElementById('major-confirmed-box').classList.add('hidden');
+                document.getElementById('mobile-major-select-box').classList.remove('hidden');
+                document.getElementById('mobile-major-confirmed-box').classList.add('hidden');
             });
         }
 
         function switchTab(tab) {
-            closeMobileSidebar();
             showLoader('Memuat halaman...', () => {
                 document.getElementById('view-tasks').classList.add('hidden');
                 document.getElementById('view-record').classList.add('hidden');
                 document.getElementById('view-trash').classList.add('hidden');
 
+                // Reset Sidebar Active State
                 document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
                 document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
                 document.getElementById('nav-trash').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
 
+                // Reset Mobile Navbar Active State
+                document.getElementById('mobile-nav-tasks').className = "flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer";
+                document.getElementById('mobile-nav-record').className = "flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer";
+                document.getElementById('mobile-nav-trash').className = "flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-rose-500 transition cursor-pointer";
+
                 if (tab === 'tasks') {
                     document.getElementById('view-tasks').classList.remove('hidden');
                     document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer";
+                    document.getElementById('mobile-nav-tasks').className = "flex flex-col items-center text-[11px] font-bold text-indigo-600 dark:text-indigo-400 transition cursor-pointer";
                     document.getElementById('header-title').innerText = "Daftar Catatan Perkuliahan";
                 } else if (tab === 'record') {
                     document.getElementById('view-record').classList.remove('hidden');
                     document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer";
+                    document.getElementById('mobile-nav-record').className = "flex flex-col items-center text-[11px] font-bold text-indigo-600 dark:text-indigo-400 transition cursor-pointer";
                     document.getElementById('header-title').innerText = "Catatan Suara";
                     
                     if (!isMajorConfirmed) {
@@ -668,7 +776,8 @@
                 } else if (tab === 'trash') {
                     document.getElementById('view-trash').classList.remove('hidden');
                     document.getElementById('nav-trash').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold text-white bg-rose-600 transition cursor-pointer shadow-xs";
-                    document.getElementById('header-title').innerText = "Folder Sampah";
+                    document.getElementById('mobile-nav-trash').className = "flex flex-col items-center text-[11px] font-bold text-rose-600 dark:text-rose-400 transition cursor-pointer";
+                    document.getElementById('header-title').innerText = "Sampah";
                     renderTrash();
                 }
             });
@@ -720,13 +829,16 @@
                 
                 card.innerHTML = `
                     <div>
-                        <!-- Header Card dengan Nomor List & Tombol Edit/Hapus -->
+                        <!-- Header Card dengan Nomor List & Tombol Download/Edit/Hapus -->
                         <div class="flex items-start justify-between">
                             <div data-id="${task.id}" class="clickable-task-text cursor-pointer group flex-1 min-w-0 pr-2">
                                 <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition break-words ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${index + 1}. ${escapeHtml(task.title)}</h4>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed group-hover:text-slate-700 dark:group-hover:text-slate-300 transition break-words ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${escapeHtml(task.desc)}</p>
                             </div>
                             <div class="flex items-center space-x-1 shrink-0">
+                                <button data-id="${task.id}" class="download-single-btn text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition p-1 cursor-pointer hover:scale-110 active:scale-95" title="Download Catatan Ini">
+                                    <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                </button>
                                 <button data-id="${task.id}" class="edit-btn text-slate-400 hover:text-slate-800 dark:hover:text-white transition p-1 cursor-pointer hover:scale-110 active:scale-95" title="Edit Catatan">
                                     <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 </button>
@@ -763,6 +875,13 @@
                 });
             });
 
+            document.querySelectorAll('.download-single-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = Number(e.currentTarget.getAttribute('data-id'));
+                    downloadSingleTask(id);
+                });
+            });
+
             document.querySelectorAll('.clickable-task-text').forEach(elem => {
                 elem.addEventListener('click', (e) => {
                     const id = Number(e.currentTarget.getAttribute('data-id'));
@@ -795,7 +914,7 @@
             if (deletedTasks.length === 0) {
                 container.innerHTML = `
                     <div class="col-span-1 sm:col-span-2 text-center py-10 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/80 animate-fade-in-up">
-                        <p class="text-xs text-slate-400 dark:text-slate-500">Tidak ada catatan di folder sampah.</p>
+                        <p class="text-xs text-slate-400 dark:text-slate-500">Tidak ada catatan di sampah.</p>
                     </div>`;
                 return;
             }
@@ -909,40 +1028,32 @@
                 saveToStorage();
                 renderTasks();
                 renderTrash();
-                showToast('Catatan dipindahkan ke folder Sampah');
+                showToast('Catatan dipindahkan ke Sampah');
             });
         }
 
-        function downloadTasks() {
+        function downloadSingleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
             showLoader('Menyiapkan file unduhan...', () => {
-                const majorTasks = tasks.filter(t => (currentMajor ? t.major === currentMajor : true) && !t.deleted);
-                if (majorTasks.length === 0) {
-                    alert(`Belum ada catatan aktif yang dapat diunduh.`);
-                    return;
-                }
-
                 let fileContent = `==================================================\n`;
-                fileContent += `  DAFTAR CATATAN PERKULIAHAN\n`;
-                fileContent += `  Jurusan : ${currentMajor || 'Semua Jurusan'}\n`;
-                fileContent += `  Tanggal : ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}\n`;
+                fileContent += `  DETAIL CATATAN PERKULIAHAN\n`;
+                fileContent += `  Jurusan : ${task.major}\n`;
+                fileContent += `  Tanggal : ${task.date}\n`;
                 fileContent += `==================================================\n\n`;
-
-                majorTasks.forEach((t, index) => {
-                    fileContent += `${index + 1}. [${t.completed ? 'SELESAI DIBACA' : 'BELUM DIBACA'}] ${t.title}\n`;
-                    fileContent += `   Dari jurusan : ${t.major}\n`;
-                    fileContent += `   Tanggal  : ${t.date}\n`;
-                    fileContent += `   Catatan  : ${t.desc}\n`;
-                    fileContent += `--------------------------------------------------\n`;
-                });
+                fileContent += `Judul  : ${task.title}\n`;
+                fileContent += `Status : ${task.completed ? 'Selesai Dibaca' : 'Belum Dibaca'}\n\n`;
+                fileContent += `Rincian Catatan:\n${task.desc}\n`;
 
                 const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = `Catatan_${(currentMajor || 'Umum').replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+                link.download = `${task.title.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                showToast('File catatan berhasil diunduh!');
+                showToast('Catatan berhasil diunduh!');
             });
         }
 
@@ -996,7 +1107,7 @@
 
         function toggleRecording() {
             if (!isMajorConfirmed) {
-                alert('Akses Ditolak: Anda wajib memilih dan mengonfirmasi jurusan terlebih dahulu di menu sidebar sebelum merekam suara!');
+                alert('Akses Ditolak: Anda wajib memilih dan mengonfirmasi jurusan terlebih dahulu sebelum merekam suara!');
                 return;
             }
 
@@ -1083,7 +1194,9 @@
                 document.getElementById('view-record').classList.add('hidden');
                 document.getElementById('view-trash').classList.add('hidden');
                 document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer";
+                document.getElementById('mobile-nav-tasks').className = "flex flex-col items-center text-[11px] font-bold text-indigo-600 dark:text-indigo-400 transition cursor-pointer";
                 document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
+                document.getElementById('mobile-nav-record').className = "flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer";
                 document.getElementById('header-title').innerText = "Daftar Catatan Perkuliahan";
                 
                 renderTasks();
@@ -1093,6 +1206,11 @@
         }
 
         function openNewTaskModal() {
+            if (!isMajorConfirmed) {
+                alert('Akses Ditolak: Anda wajib memilih dan mengonfirmasi jurusan terlebih dahulu sebelum menambah catatan!');
+                return;
+            }
+
             document.getElementById('modal-heading').innerText = 'Tambah Catatan Baru';
             document.getElementById('modal-edit-id').value = '';
             document.getElementById('modal-title').value = '';
