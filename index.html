@@ -46,10 +46,15 @@
             50% { transform: scaleY(1.4); }
         }
 
-        @keyframes waveMoveLeftRight {
-            0% { transform: translateX(0) translateZ(0) scaleY(1); }
-            50% { transform: translateX(-25%) translateZ(0) scaleY(0.85); }
-            100% { transform: translateX(0) translateZ(0) scaleY(1); }
+        @keyframes floatParticle {
+            0% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: var(--base-opacity); }
+            50% { transform: translateY(-35px) translateX(15px) rotate(180deg); opacity: calc(var(--base-opacity) + 0.2); }
+            100% { transform: translateY(0px) translateX(0px) rotate(360deg); opacity: var(--base-opacity); }
+        }
+
+        @keyframes sunSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .animate-fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -61,25 +66,24 @@
         .wave-bar { transition: height 0.15s ease-in-out, background-color 0.3s; }
         .wave-bar-active { animation: waveBounce 1.2s ease-in-out infinite alternate; }
 
-        .water-wave-container {
+        .particle-bg-container {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 200%;
-            height: 120px;
+            inset: 0;
             pointer-events: none;
             z-index: 0;
             overflow: hidden;
-            opacity: 0.5;
         }
-        .water-wave-svg {
-            width: 100%;
-            height: 100%;
-            animation: waveMoveLeftRight 12s ease-in-out infinite;
+
+        .bg-particle {
+            position: absolute;
+            animation: floatParticle 8s ease-in-out infinite;
+        }
+
+        .sun-ray-particle {
+            animation: sunSpin 25s linear infinite;
         }
 
         .task-card { transition: all 0.2s ease-in-out; }
-        .task-card:hover { transform: translateY(-2px); }
 
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -87,11 +91,11 @@
         .dark ::-webkit-scrollbar-thumb { background: #334155; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-200 flex h-screen overflow-hidden relative">
+<body class="bg-slate-200/90 text-slate-700 dark:bg-slate-900 dark:text-slate-200 flex h-screen overflow-hidden relative">
 
     <!-- OVERLAY LOADING GLOBAL -->
     <div id="global-loader" class="fixed inset-0 bg-slate-900/35 backdrop-blur-xs hidden items-center justify-center z-50 transition-opacity p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-xl flex items-center space-x-3 border border-slate-200/60 dark:border-slate-700 animate-pop-in">
+        <div class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-5 shadow-xl flex items-center space-x-3 border border-slate-200/80 dark:border-slate-700 animate-pop-in">
             <svg class="animate-spin h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -100,11 +104,11 @@
         </div>
     </div>
 
-    <!-- SIDEBAR LEFT (HANYA MUNCUL DI LAYAR DESKTOP / PC DENGAN lg:flex, DISEMBUNYIKAN DI HP) -->
-    <aside id="sidebar" class="hidden lg:flex w-64 bg-white dark:bg-slate-800 border-r border-slate-200/80 dark:border-slate-700/80 flex-col justify-between shrink-0 z-40 shadow-none">
+    <!-- SIDEBAR LEFT -->
+    <aside id="sidebar" class="hidden lg:flex w-64 bg-slate-100/90 dark:bg-slate-800 border-r border-slate-300/80 dark:border-slate-700/80 flex-col justify-between shrink-0 z-40 shadow-none">
         <div>
             <!-- Header Brand -->
-            <div class="p-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
+            <div class="p-4 border-b border-slate-300/60 dark:border-slate-700/50 flex items-center justify-between">
                 <div class="flex items-center space-x-3 min-w-0">
                     <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">CS</div>
                     <div class="min-w-0">
@@ -114,11 +118,11 @@
             </div>
 
             <!-- AREA PEMILIHAN JURUSAN & STATUS -->
-            <div class="m-3 p-3 bg-slate-50/80 dark:bg-slate-900/50 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-2">
+            <div class="m-3 p-3 bg-slate-50/90 dark:bg-slate-900/50 rounded-xl border border-slate-300/80 dark:border-slate-700/60 space-y-2 shadow-2xs">
                 
                 <div id="major-select-box" class="space-y-2">
-                    <label for="select-major" class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block">Pilih Jurusan</label>
-                    <select id="select-major" class="w-full text-xs font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-400 cursor-pointer">
+                    <label for="select-major" class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block">Pilih Jurusan</label>
+                    <select id="select-major" class="w-full text-xs font-medium bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-400 cursor-pointer">
                         <optgroup label="Teknik & Informatika">
                             <option value="Magister Teknologi Informasi (S2)">Magister Teknologi Informasi (S2)</option>
                             <option value="Sistem Informasi (S1)">Sistem Informasi (S1)</option>
@@ -157,11 +161,11 @@
                 </div>
 
                 <div id="major-confirmed-box" class="hidden space-y-2 animate-fade-in-up">
-                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block">JURUSAN</span>
-                    <p id="confirmed-major-display" class="text-xs font-bold text-slate-800 dark:text-white bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-700 break-words">
+                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block">JURUSAN</span>
+                    <p id="confirmed-major-display" class="text-xs font-bold text-slate-800 dark:text-white bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 break-words">
                         Jurusan Anda: Informatika (S1)
                     </p>
-                    <button onclick="openResetMajorModal()" class="w-full bg-slate-200/70 dark:bg-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-600 dark:text-slate-300 text-[11px] font-semibold py-1.5 rounded-lg transition cursor-pointer">
+                    <button onclick="openResetMajorModal()" class="w-full bg-slate-200/90 dark:bg-slate-700/60 hover:bg-slate-300 dark:hover:bg-slate-700 active:scale-95 text-slate-600 dark:text-slate-300 text-[11px] font-semibold py-1.5 rounded-lg transition cursor-pointer">
                         Mau memilih ulang jurusan?
                     </button>
                 </div>
@@ -170,41 +174,54 @@
 
             <!-- NAVIGATION LINKS -->
             <nav class="px-3 space-y-1">
-                <button onclick="switchTab('tasks')" id="nav-tasks" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer">
+                <button onclick="switchTab('tasks')" id="nav-tasks" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-100/70 dark:bg-indigo-950/40 transition cursor-pointer">
                     <span class="flex items-center space-x-2.5 min-w-0">
                         <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                         <span class="truncate">Daftar Catatan</span>
                     </span>
                     <div class="flex items-center justify-end w-6 shrink-0 ml-2">
-                        <span id="task-count" class="h-5 min-w-[20px] px-1.5 flex items-center justify-center text-[11px] bg-indigo-100/80 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-full font-bold">0</span>
+                        <span id="task-count" class="h-5 min-w-[20px] px-1.5 flex items-center justify-center text-[11px] bg-indigo-200/70 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-full font-bold">0</span>
                     </div>
                 </button>
 
-                <button onclick="switchTab('record')" id="nav-record" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer">
+                <button onclick="switchTab('record')" id="nav-record" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-300/50 dark:hover:bg-slate-700/50 transition cursor-pointer">
                     <span class="flex items-center space-x-2.5 min-w-0">
                         <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
                         <span class="truncate animate-slow-blink">Rekam Suara Anda</span>
                     </span>
                 </button>
 
-                <div class="pt-3 mt-3 border-t border-slate-100 dark:border-slate-700/50">
-                    <button onclick="switchTab('trash')" id="nav-trash" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer">
+                <div class="pt-3 mt-3 border-t border-slate-300/60 dark:border-slate-700/50 space-y-1">
+                    <button onclick="switchTab('trash')" id="nav-trash" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-rose-100/60 dark:hover:bg-rose-950/30 hover:text-rose-600 transition cursor-pointer">
                         <span class="flex items-center space-x-2.5 min-w-0">
-                            <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            <svg id="sidebar-trash-icon" class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             <span class="truncate">Sampah</span>
                         </span>
                         <div class="flex items-center justify-end w-6 shrink-0 ml-2">
-                            <span id="trash-count" class="h-5 min-w-[20px] px-1.5 flex items-center justify-center text-[11px] bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 rounded-full font-bold">0</span>
+                            <span id="trash-count" class="h-5 min-w-[20px] px-1.5 flex items-center justify-center text-[11px] bg-rose-200/80 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 rounded-full font-bold">0</span>
                         </div>
                     </button>
+
+                    <!-- TOMBOL BACKUP & RESTORE JSON -->
+                    <div class="pt-2 grid grid-cols-2 gap-1.5">
+                        <button onclick="exportJSONBackup()" class="w-full bg-slate-200/80 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-[11px] font-semibold py-2 px-2 rounded-lg transition cursor-pointer flex items-center justify-center space-x-1" title="Backup data ke file JSON">
+                            <svg class="w-3.5 h-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <span>Backup</span>
+                        </button>
+                        <button onclick="triggerImportJSON()" class="w-full bg-slate-200/80 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-[11px] font-semibold py-2 px-2 rounded-lg transition cursor-pointer flex items-center justify-center space-x-1" title="Restore data dari file JSON">
+                            <svg class="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <span>Restore</span>
+                        </button>
+                        <input type="file" id="import-json-file" accept=".json" class="hidden" onchange="importJSONBackup(event)">
+                    </div>
                 </div>
             </nav>
         </div>
 
         <!-- FOOTER SIDEBAR KHUSUS PC / LAPTOP -->
-        <div class="p-4 border-t border-slate-100 dark:border-slate-700/50 space-y-2 text-xs text-slate-500 dark:text-slate-400">
+        <div class="p-4 border-t border-slate-300/60 dark:border-slate-700/50 space-y-2 text-xs text-slate-500 dark:text-slate-400">
             <div id="pc-live-clock" class="font-bold text-indigo-600 dark:text-indigo-400 leading-snug">Hari : Memuat waktu...</div>
-            <div class="pt-1.5 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between font-medium">
+            <div class="pt-1.5 border-t border-slate-300/60 dark:border-slate-700/50 flex items-center justify-between font-medium">
                 <span>Gemini &copy; 2026</span>
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Online"></span>
             </div>
@@ -215,7 +232,7 @@
     <main class="flex-1 flex flex-col h-screen overflow-y-auto min-w-0 relative z-10 pb-28 lg:pb-8">
         
         <!-- TOP HEADER -->
-        <header class="bg-white dark:bg-slate-800 border-b border-slate-200/80 dark:border-slate-700/80 px-4 lg:px-8 py-3.5 flex items-center justify-between sticky top-0 z-20 gap-2">
+        <header class="bg-slate-100/90 dark:bg-slate-800 border-b border-slate-300/80 dark:border-slate-700/80 px-4 lg:px-8 py-3.5 flex items-center justify-between sticky top-0 z-20 gap-2 shadow-2xs">
             <div class="flex items-center space-x-3 min-w-0">
                 <div class="min-w-0">
                     <h2 id="header-title" class="text-sm sm:text-base lg:text-lg font-bold text-slate-800 dark:text-white leading-tight truncate">Daftar Catatan Perkuliahan</h2>
@@ -224,15 +241,29 @@
             </div>
             
             <div class="flex items-center space-x-1.5 sm:space-x-2 lg:space-x-3 shrink-0">
-                <!-- TOMBOL MODE GELAP / TERANG -->
-                <button onclick="toggleDarkMode()" id="theme-toggle-btn" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer" title="Ubah Mode Tampilan">
-                    <svg id="sun-icon" class="w-4 h-4 hidden text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    <svg id="moon-icon" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <!-- TOMBOL BACKUP & RESTORE MOBILE DENGAN TEKS -->
+                <div class="lg:hidden flex items-center space-x-1.5">
+                    <button onclick="exportJSONBackup()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer border border-slate-300 dark:border-slate-600 shadow-2xs flex items-center space-x-1" title="Backup JSON">
+                        <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <span>Backup</span>
+                    </button>
+                    <button onclick="triggerImportJSON()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer border border-slate-300 dark:border-slate-600 shadow-2xs flex items-center space-x-1" title="Restore JSON">
+                        <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span>Restore</span>
+                    </button>
+                </div>
+
+                <!-- TOMBOL MODE GELAP / TERANG DENGAN IKON SESUAI PILIHAN -->
+                <button onclick="toggleDarkMode()" id="theme-toggle-btn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer border border-slate-300 dark:border-slate-600 shadow-2xs flex items-center space-x-1.5" title="Ubah Mode Tampilan">
+                    <svg id="sun-icon" class="w-4 h-4 hidden text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="moon-icon" class="w-4 h-4 text-slate-700 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <span id="theme-label-text" class="hidden sm:inline font-medium">Light Mode</span>
                 </button>
 
                 <button onclick="openNewTaskModal()" class="bg-slate-800 dark:bg-indigo-600 hover:bg-slate-900 dark:hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold px-2.5 sm:px-3 lg:px-4 py-2 rounded-lg flex items-center space-x-1.5 shadow-xs transition cursor-pointer">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    <span>Tambah Catatan Manual</span>
+                    <span class="hidden sm:inline">Tambah Catatan Manual</span>
+                    <span class="sm:hidden">Tambah Catatan Manual</span>
                 </button>
             </div>
         </header>
@@ -241,10 +272,10 @@
         <div class="p-4 lg:p-8 max-w-5xl w-full mx-auto space-y-4 lg:space-y-6 relative z-10">
 
             <!-- BANNER PEMILIHAN JURUSAN KHUSUS MOBILE -->
-            <div class="lg:hidden bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-3">
+            <div class="lg:hidden bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-300/80 dark:border-slate-700/80 shadow-xs space-y-3">
                 <div id="mobile-major-select-box" class="space-y-2">
-                    <label for="mobile-select-major" class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block">Pilih Jurusan Kuliah</label>
-                    <select id="mobile-select-major" class="w-full text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-400 cursor-pointer">
+                    <label for="mobile-select-major" class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block">Pilih Jurusan Kuliah</label>
+                    <select id="mobile-select-major" class="w-full text-xs font-medium bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-400 cursor-pointer">
                         <optgroup label="Teknik & Informatika">
                             <option value="Magister Teknologi Informasi (S2)">Magister Teknologi Informasi (S2)</option>
                             <option value="Sistem Informasi (S1)">Sistem Informasi (S1)</option>
@@ -283,11 +314,11 @@
                 </div>
 
                 <div id="mobile-major-confirmed-box" class="hidden space-y-2">
-                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block">JURUSAN</span>
-                    <p id="mobile-confirmed-major-display" class="text-xs font-bold text-slate-800 dark:text-white bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-700 break-words">
+                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block">JURUSAN</span>
+                    <p id="mobile-confirmed-major-display" class="text-xs font-bold text-slate-800 dark:text-white bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 break-words">
                         Jurusan: Informatika (S1)
                     </p>
-                    <button onclick="openResetMajorModal()" class="w-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 active:scale-95 text-slate-600 dark:text-slate-300 text-[11px] font-semibold py-1.5 rounded-lg transition cursor-pointer">
+                    <button onclick="openResetMajorModal()" class="w-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 active:scale-95 text-slate-600 dark:text-slate-300 text-[11px] font-semibold py-1.5 rounded-lg transition cursor-pointer">
                         Mau memilih ulang jurusan?
                     </button>
                 </div>
@@ -305,8 +336,8 @@
                         <ol class="text-xs text-slate-300 space-y-1 list-decimal list-inside leading-relaxed">
                             <li><b>Pilih & Konfirmasi Jurusan:</b> Pilih jurusan Anda, lalu klik <i>Konfirmasi Jurusan</i>.</li>
                             <li><b>Rekam Suara Anda:</b> Tentukan judul, rekam suara, lalu simpan.</li>
-                            <li><b>Download Satuan:</b> Klik ikon download pada tiap kartu catatan untuk mengunduh catatan tersebut secara terpisah.</li>
-                            <li><b>Ubah Tampilan:</b> Klik tombol Bulan/Matahari di kanan atas untuk berpindah antara Mode Terang & Gelap.</li>
+                            <li><b>Backup & Restore JSON:</b> Dilengkapi validasi ketat antar jurusan agar file cadangan aman dan tidak saling tumpang tindih.</li>
+                            <li><b>Ubah Tampilan:</b> Klik tombol mode di kanan atas untuk berpindah antara Mode Terang & Gelap dengan notifikasi ikon di kanan bawah.</li>
                         </ol>
                     </div>
                     <button onclick="dismissGuideBanner()" class="bg-slate-700 hover:bg-slate-600 active:scale-95 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition cursor-pointer shrink-0 border border-slate-600">
@@ -319,10 +350,10 @@
             <section id="view-tasks" class="space-y-4 lg:space-y-6">
                 
                 <!-- STATISTIK & PROGRESS BAR CATATAN -->
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-3 animate-fade-in-up">
+                <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-300/80 dark:border-slate-700/80 shadow-2xs space-y-3 animate-fade-in-up">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-2">
-                            <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                            <div class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                             </div>
                             <span class="text-xs font-bold text-slate-800 dark:text-white">Progress Membaca Catatan</span>
@@ -330,22 +361,22 @@
                         <span id="stat-percentage" class="text-xs font-bold text-indigo-600 dark:text-indigo-400">0% Selesai</span>
                     </div>
                     <!-- Progress Bar Track -->
-                    <div class="w-full bg-slate-100 dark:bg-slate-700/60 h-2 rounded-full overflow-hidden">
+                    <div class="w-full bg-slate-200 dark:bg-slate-700/60 h-2 rounded-full overflow-hidden">
                         <div id="stat-progress-bar" class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
                     </div>
-                    <div class="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-medium pt-1">
+                    <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium pt-1">
                         <span id="stat-completed-text">0 dari 0 catatan telah selesai dibaca</span>
                         <span id="stat-active-text">Aktif</span>
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-300/80 dark:border-slate-700/80 shadow-2xs">
                     <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto">
                         <button onclick="filterStatus('all')" id="filter-all" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0">Semua</button>
-                        <button onclick="filterStatus('pending')" id="filter-pending" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition shrink-0">Belum Selesai</button>
-                        <button onclick="filterStatus('completed')" id="filter-completed" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition shrink-0">Selesai Dibaca</button>
+                        <button onclick="filterStatus('pending')" id="filter-pending" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer transition shrink-0">Belum Selesai</button>
+                        <button onclick="filterStatus('completed')" id="filter-completed" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer transition shrink-0">Selesai Dibaca</button>
                     </div>
-                    <input type="text" id="search-input" oninput="renderTasks()" placeholder="Cari catatan..." class="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 w-full sm:w-56 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200">
+                    <input type="text" id="search-input" oninput="renderTasks()" placeholder="Cari catatan..." class="text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 w-full sm:w-56 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200">
                 </div>
 
                 <div id="tasks-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
@@ -363,22 +394,22 @@
                     <p class="text-xs text-amber-700 dark:text-amber-400 max-w-md mx-auto">Anda belum mengonfirmasi jurusan. Harap konfirmasi jurusan Anda terlebih dahulu untuk menggunakan rekam suara.</p>
                 </div>
 
-                <div id="record-main-box" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 p-5 lg:p-8 shadow-xs animate-fade-in-up">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-700/50 pb-4 mb-6 gap-2">
+                <div id="record-main-box" class="bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-300/80 dark:border-slate-700/80 p-5 lg:p-8 shadow-2xs animate-fade-in-up">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-700/50 pb-4 mb-6 gap-2">
                         <div>
                             <h3 class="text-base lg:text-lg font-bold text-slate-800 dark:text-white">Perekam Catatan Suara (CS)</h3>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tentukan judul, rekam suara Anda, lalu simpan menjadi catatan baru.</p>
                         </div>
-                        <span id="active-major-badge" class="self-start sm:self-auto text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-600 truncate max-w-full">Belum Pilih Jurusan</span>
+                        <span id="active-major-badge" class="self-start sm:self-auto text-xs px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-300 dark:border-slate-600 truncate max-w-full">Belum Pilih Jurusan</span>
                     </div>
 
                     <!-- INPUT CUSTOM JUDUL CATATAN -->
                     <div class="space-y-2 mb-4">
                         <label for="record-title-input" class="text-xs font-semibold text-slate-700 dark:text-slate-300">Judul Catatan Suara</label>
-                        <input type="text" id="record-title-input" placeholder="Contoh: Pertemuan 1 - Kalkulus" class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200">
+                        <input type="text" id="record-title-input" placeholder="Contoh: Pertemuan 1 - Kalkulus" class="w-full text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200">
                     </div>
 
-                    <div class="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/60 rounded-xl p-6 lg:p-8 text-center space-y-5">
+                    <div class="bg-white/80 dark:bg-slate-900/60 border border-slate-300/60 dark:border-slate-700/60 rounded-xl p-6 lg:p-8 text-center space-y-5">
                         
                         <!-- WAVEFORM AUDIO LIVE -->
                         <div id="wave-container" class="flex justify-center items-end space-x-2 h-14 py-2">
@@ -409,11 +440,15 @@
 
                     <div class="space-y-2 mt-5">
                         <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Hasil Teks (Live):</label>
-                        <textarea id="transcript-result" rows="4" placeholder="Hasil suara Anda akan muncul di sini secara otomatis..." class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200"></textarea>
+                        <textarea id="transcript-result" rows="4" placeholder="Hasil suara Anda akan muncul di sini secara otomatis..." class="w-full text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-3.5 focus:outline-none focus:ring-1 focus:ring-indigo-400 transition text-slate-700 dark:text-slate-200"></textarea>
                     </div>
 
-                    <div class="flex justify-end space-x-2.5 pt-4 border-t border-slate-100 dark:border-slate-700/50">
-                        <button onclick="clearTranscript()" class="px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer">Bersihkan</button>
+                    <div class="flex justify-end space-x-2.5 pt-4 border-t border-slate-200 dark:border-slate-700/50">
+                        <!-- TOMBOL BERSIHKAN DENGAN WARNA KHUSUS (BIRU MENCOLOK) -->
+                        <button onclick="clearTranscript()" class="px-4 py-2 rounded-lg text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 active:scale-95 shadow-xs transition cursor-pointer flex items-center space-x-1.5">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            <span>Bersihkan</span>
+                        </button>
                         <button onclick="saveTranscriptToTask()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-800 dark:bg-indigo-600 hover:bg-slate-900 dark:hover:bg-indigo-700 text-white shadow-xs transition active:scale-95 flex items-center space-x-1.5 cursor-pointer">
                             <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
                             <span>Simpan Catatan</span>
@@ -424,8 +459,8 @@
 
             <!-- VIEW 3: SAMPAH -->
             <section id="view-trash" class="hidden space-y-4 lg:space-y-6">
-                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 p-5 lg:p-8 shadow-xs animate-fade-in-up">
-                    <div class="border-b border-slate-100 dark:border-slate-700/50 pb-3 mb-5">
+                <div class="bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-300/80 dark:border-slate-700/80 p-5 lg:p-8 shadow-2xs animate-fade-in-up">
+                    <div class="border-b border-slate-200 dark:border-slate-700/50 pb-3 mb-5">
                         <h3 class="text-base lg:text-lg font-bold text-slate-800 dark:text-white">Sampah</h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Penghapusan catatan dan bisa di kembalikan kembali ke daftar catatan.</p>
                     </div>
@@ -439,7 +474,7 @@
     </main>
 
     <!-- BOTTOM NAVBAR MOBILE -->
-    <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-700/80 px-4 py-2.5 z-40 flex flex-col space-y-1.5 shadow-lg">
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-100/95 dark:bg-slate-800/95 backdrop-blur-md border-t border-slate-300/80 dark:border-slate-700/80 px-4 py-2.5 z-40 flex flex-col space-y-1.5 shadow-lg">
         <div class="flex items-center justify-around">
             <button onclick="switchTab('tasks')" id="mobile-nav-tasks" class="flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer">
                 <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
@@ -456,39 +491,36 @@
         </div>
     </div>
 
-    <!-- ANIMASI GELOMBANG AIR (WATER WAVE) -->
-    <div class="water-wave-container">
-        <svg class="water-wave-svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,0 C150,90 350,-40 550,50 C750,130 900,10 1200,40 L1200,120 L0,120 Z" class="fill-indigo-500/10 dark:fill-indigo-400/10"></path>
-            <path d="M0,20 C200,100 450,-20 650,60 C850,120 1000,20 1200,50 L1200,120 L0,120 Z" class="fill-indigo-400/15 dark:fill-indigo-500/15"></path>
-        </svg>
+    <!-- BACKGROUND PARTIKEL DINAMIS -->
+    <div id="particle-bg-container" class="particle-bg-container">
+        <!-- Partikel akan di-generate otomatis via JavaScript berdasarkan mode tema -->
     </div>
 
     <!-- MODAL TAMBAH CATATAN -->
     <div id="task-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center z-50 p-4 transition-opacity">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 lg:p-6 w-full max-w-md shadow-xl space-y-4 animate-pop-in">
+        <div class="bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-300 dark:border-slate-700 p-5 lg:p-6 w-full max-w-md shadow-xl space-y-4 animate-pop-in">
             <h3 id="modal-heading" class="text-base font-bold text-slate-800 dark:text-white">Tambah Catatan Baru</h3>
             <input type="hidden" id="modal-edit-id" value="">
             <div class="space-y-3">
                 <div>
                     <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Judul Catatan / Mata Kuliah</label>
-                    <input type="text" id="modal-title" placeholder="Contoh: Kalkulus" class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-400 text-slate-800 dark:text-slate-100">
+                    <input type="text" id="modal-title" placeholder="Contoh: Statistika" class="w-full text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-400 text-slate-800 dark:text-slate-100">
                 </div>
                 <div>
                     <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Rincian Materi Catatan</label>
-                    <textarea id="modal-desc" rows="4" placeholder="Isikan materi penjelasan atau poin penting..." class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-400 text-slate-800 dark:text-slate-100"></textarea>
+                    <textarea id="modal-desc" rows="4" placeholder="Isikan materi penjelasan atau poin penting..." class="w-full text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-400 text-slate-800 dark:text-slate-100"></textarea>
                 </div>
             </div>
-            <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-slate-700/50">
-                <button onclick="closeNewTaskModal()" class="px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg cursor-pointer transition">Batal</button>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200 dark:border-slate-700/50">
+                <button onclick="closeNewTaskModal()" class="px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg cursor-pointer transition">Batal</button>
                 <button onclick="saveManualTask()" class="px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-lg cursor-pointer transition">Simpan Catatan</button>
             </div>
         </div>
     </div>
 
-    <!-- CUSTOM RESPONSIVE ALERT / CONFIRM MODAL (UNTUK SEMUA DEVICE) -->
+    <!-- CUSTOM RESPONSIVE ALERT / CONFIRM MODAL -->
     <div id="app-confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center z-50 p-4 transition-opacity">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 sm:p-6 w-full max-w-xs sm:max-w-sm shadow-xl space-y-4 text-center animate-pop-in">
+        <div class="bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-300 dark:border-slate-700 p-5 sm:p-6 w-full max-w-xs sm:max-w-sm shadow-xl space-y-4 text-center animate-pop-in">
             <div id="alert-icon-box" class="w-11 h-11 rounded-full flex items-center justify-center mx-auto bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
@@ -504,7 +536,7 @@
 
     <!-- MODAL ALERT KONFIRMASI MEMILIH ULANG JURUSAN -->
     <div id="reset-major-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center z-50 p-4 transition-opacity">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 sm:p-6 w-full max-w-xs sm:max-w-sm shadow-xl space-y-4 text-center animate-pop-in">
+        <div class="bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-300 dark:border-slate-700 p-5 sm:p-6 w-full max-w-xs sm:max-w-sm shadow-xl space-y-4 text-center animate-pop-in">
             <div class="w-11 h-11 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
@@ -513,15 +545,17 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Daftar pilihan jurusan akan dibuka kembali agar Anda dapat mengganti jurusan aktif.</p>
             </div>
             <div class="flex justify-center space-x-2.5 pt-1">
-                <button onclick="closeResetMajorModal()" class="w-1/2 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg cursor-pointer transition">Batal</button>
+                <button onclick="closeResetMajorModal()" class="w-1/2 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-lg cursor-pointer transition">Batal</button>
                 <button onclick="confirmResetMajorSelection()" class="w-1/2 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-lg cursor-pointer transition">Lanjutkan</button>
             </div>
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="fixed bottom-24 right-5 bg-slate-800 dark:bg-slate-700 text-white text-xs px-4 py-3 rounded-xl shadow-lg hidden flex items-center space-x-2 z-50 pointer-events-none">
-        <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <!-- TOAST NOTIFICATION DENGAN IKON DINAMIS DI KANAN BAWAH -->
+    <div id="toast" class="fixed bottom-24 right-5 bg-slate-800 dark:bg-slate-700 text-white text-xs px-4 py-3 rounded-xl shadow-lg hidden flex items-center space-x-2.5 z-50 pointer-events-none">
+        <span id="toast-icon-container" class="shrink-0 flex items-center">
+            <!-- Ikon dinamis inject via JS -->
+        </span>
         <span id="toast-message">Catatan berhasil disimpan!</span>
     </div>
 
@@ -534,15 +568,15 @@
             const stored = localStorage.getItem('tn_tasks_all');
             if (stored) {
                 tasks = JSON.parse(stored);
-                checkAutoDeleteTrash(); // Cek dan hapus otomatis jika sudah > 30 hari di sampah
+                checkAutoDeleteTrash();
             }
         } catch(e) { console.error("Storage load error:", e); }
 
         let currentFilter = 'all';
         let isRecording = false;
         let recognition = null;
+        let finalTranscriptAccumulator = '';
 
-        // FUNGSI CEK OTOMATIS SAMPAH > 30 HARI
         function checkAutoDeleteTrash() {
             const now = Date.now();
             const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -552,7 +586,7 @@
                 if (t.deleted && t.deletedAt) {
                     if (now - t.deletedAt > THIRTY_DAYS_MS) {
                         hasChanges = true;
-                        return false; // Hapus permanen karena sudah > 30 hari
+                        return false;
                     }
                 }
                 return true;
@@ -563,7 +597,165 @@
             }
         }
 
-        // Kustom Modal Alert / Confirm Pengganti window.confirm & window.alert untuk semua device
+        // FUNGSI BACKUP JSON DENGAN PENGECEKAN KONFIRMASI JURUSAN
+        function exportJSONBackup() {
+            if (!isMajorConfirmed) {
+                showAppAlert('Peringatan', 'Pastikan Anda sudah konfirmasi jurusan terlebih dahulu!', 'warning');
+                return;
+            }
+
+            showLoader('Menyiapkan file backup JSON...', () => {
+                const activeMajorTag = currentMajor ? currentMajor : 'Umum';
+                
+                const backupPayload = {
+                    "#backup_an_ini_khusus": activeMajorTag,
+                    "exported_at": new Date().toISOString(),
+                    "total_tasks": tasks.length,
+                    "tasks": tasks
+                };
+
+                const dataStr = JSON.stringify(backupPayload, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                const safeMajorName = activeMajorTag.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+                const dateTag = new Date().toISOString().slice(0, 10);
+                link.download = `catatan_suara_${safeMajorName}_${dateTag}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                showToast(`Backup JSON (${activeMajorTag}) berhasil diunduh!`, 'success');
+            });
+        }
+
+        function triggerImportJSON() {
+            document.getElementById('import-json-file').click();
+        }
+
+        // FUNGSI RESTORE JSON DENGAN VALIDASI KETAT ANTAR JURUSAN & CEK KONFIRMASI
+        function importJSONBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!isMajorConfirmed) {
+                showAppAlert('Peringatan', 'Pastikan Anda sudah konfirmasi jurusan terlebih dahulu!', 'warning');
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsedData = JSON.parse(e.target.result);
+                    
+                    let importedTasks = [];
+                    let fileMajor = '';
+
+                    if (Array.isArray(parsedData)) {
+                        importedTasks = parsedData;
+                        fileMajor = 'Tidak Diketahui';
+                    } else if (parsedData && typeof parsedData === 'object') {
+                        fileMajor = parsedData["#backup_an_ini_khusus"] || parsedData.major || 'Tidak Diketahui';
+                        importedTasks = parsedData.tasks || [];
+                    }
+
+                    if (importedTasks.length === 0 && Array.isArray(parsedData) === false) {
+                        showAppAlert('Format Salah', 'File JSON tidak valid atau tidak berisi data catatan.', 'warning');
+                        event.target.value = '';
+                        return;
+                    }
+
+                    const activeWorkspaceMajor = currentMajor ? currentMajor : 'Belum Dikonfirmasi';
+
+                    if (currentMajor && fileMajor !== 'Tidak Diketahui' && fileMajor !== currentMajor) {
+                        showAppAlert(
+                            'Restore Ditolak!',
+                            `Backup ini milik jurusan "${fileMajor}", sedangkan jurusan Anda saat ini adalah "${activeWorkspaceMajor}".\n\nBackup dari suatu jurusan hanya bisa direstore ke jurusan yang sama.`,
+                            'danger'
+                        );
+                        event.target.value = '';
+                        return;
+                    }
+
+                    showAppAlert(
+                        'Konfirmasi Restore',
+                        `File JSON valid ditemukan (${fileMajor}) berisi ${importedTasks.length} catatan. Apakah Anda ingin menerapkan data ini?`,
+                        'info',
+                        () => {
+                            executeRestore(importedTasks);
+                        }
+                    );
+
+                } catch (err) {
+                    showAppAlert('Gagal Membaca File', 'Terjadi kesalahan saat menguraikan file JSON. Pastikan file valid.', 'danger');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function executeRestore(importedTasks) {
+            showLoader('Memulihkan data dari JSON...', () => {
+                tasks = importedTasks;
+                saveToStorage();
+                renderTasks();
+                renderTrash();
+                showToast('Data berhasil direstore dari file JSON!', 'success');
+            });
+        }
+
+        function renderDynamicParticles() {
+            const container = document.getElementById('particle-bg-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const count = 18;
+
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'bg-particle';
+                
+                const size = Math.floor(Math.random() * 24) + 14;
+                const posX = Math.random() * 95;
+                const posY = Math.random() * 90;
+                const duration = (Math.random() * 6 + 7).toFixed(1);
+                const delay = (Math.random() * 5).toFixed(1);
+                const opacity = (Math.random() * 0.25 + 0.15).toFixed(2);
+
+                el.style.width = `${size}px`;
+                el.style.height = `${size}px`;
+                el.style.left = `${posX}%`;
+                el.style.top = `${posY}%`;
+                el.style.animationDuration = `${duration}s`;
+                el.style.animationDelay = `${delay}s`;
+                el.style.setProperty('--base-opacity', opacity);
+
+                if (isDark) {
+                    if (i % 4 === 0) {
+                        el.innerHTML = `<svg class="w-full h-full text-indigo-300/60" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c.132 0 .263.005.393.015C9.697 3.54 7.5 5.99 7.5 9c0 3.314 2.686 6 6 6 3.01 0 5.46-2.197 5.985-4.893.01.13.015.261.015.393 0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9z"/></svg>`;
+                    } else {
+                        el.innerHTML = `<svg class="w-full h-full text-sky-200/60" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0l3.09 8.26L24 11.27l-7.25 5.76L19.18 24 12 19.34 4.82 24l2.43-6.97L0 11.27l8.91-3.01z"/></svg>`;
+                    }
+                } else {
+                    if (i % 3 === 0) {
+                        el.className += ' sun-ray-particle';
+                        el.innerHTML = `<svg class="w-full h-full text-amber-600/40" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42m12.72-12.72l1.42-1.42"/></svg>`;
+                    } else if (i % 3 === 1) {
+                        el.innerHTML = `<svg class="w-full h-full text-amber-500/35" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/></svg>`;
+                    } else {
+                        el.style.borderRadius = '50%';
+                        el.style.background = 'radial-gradient(circle, rgba(217, 119, 6, 0.3) 0%, rgba(245, 158, 11, 0.08) 70%)';
+                        el.style.boxShadow = '0 0 8px rgba(217, 119, 6, 0.15)';
+                    }
+                }
+
+                container.appendChild(el);
+            }
+        }
+
         function showAppAlert(title, message, type = 'info', onConfirm = null) {
             const modal = document.getElementById('app-confirm-modal');
             const titleElem = document.getElementById('alert-title');
@@ -584,9 +776,8 @@
             }
 
             if (onConfirm) {
-                // Mode Konfirmasi (Dua Tombol)
                 buttonsContainer.innerHTML = `
-                    <button onclick="closeAppAlert()" class="w-1/2 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg cursor-pointer transition">Batal</button>
+                    <button onclick="closeAppAlert()" class="w-1/2 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-lg cursor-pointer transition">Batal</button>
                     <button id="alert-confirm-btn" class="w-1/2 py-2 text-xs font-semibold text-white rounded-lg cursor-pointer transition active:scale-95 ${type === 'danger' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-indigo-600 hover:bg-indigo-700'}">Ya, Lanjutkan</button>
                 `;
                 document.getElementById('alert-confirm-btn').onclick = () => {
@@ -594,7 +785,6 @@
                     onConfirm();
                 };
             } else {
-                // Mode Informasi (Satu Tombol OK)
                 buttonsContainer.innerHTML = `
                     <button onclick="closeAppAlert()" class="w-full py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg cursor-pointer transition active:scale-95">OK</button>
                 `;
@@ -616,6 +806,11 @@
                 document.documentElement.classList.add('dark');
                 document.getElementById('sun-icon').classList.remove('hidden');
                 document.getElementById('moon-icon').classList.add('hidden');
+                document.getElementById('theme-label-text').innerText = 'Night Mode';
+            } else {
+                document.getElementById('sun-icon').classList.add('hidden');
+                document.getElementById('moon-icon').classList.remove('hidden');
+                document.getElementById('theme-label-text').innerText = 'Light Mode';
             }
 
             if (localStorage.getItem('tn_guide_dismissed') === 'true') {
@@ -648,6 +843,7 @@
                 document.getElementById('record-lock-warning').classList.add('hidden');
             }
 
+            renderDynamicParticles();
             renderTasks();
             renderTrash();
             initSpeechRecognition();
@@ -672,18 +868,26 @@
             const html = document.documentElement;
             const sun = document.getElementById('sun-icon');
             const moon = document.getElementById('moon-icon');
+            const themeLabel = document.getElementById('theme-label-text');
 
             if (html.classList.contains('dark')) {
                 html.classList.remove('dark');
                 sun.classList.add('hidden');
                 moon.classList.remove('hidden');
+                themeLabel.innerText = 'Light Mode';
                 localStorage.setItem('tn_dark_mode', 'false');
+                
+                showToast('Dipilih : light mode', 'light');
             } else {
                 html.classList.add('dark');
                 sun.classList.remove('hidden');
                 moon.classList.add('hidden');
+                themeLabel.innerText = 'Night Mode';
                 localStorage.setItem('tn_dark_mode', 'true');
+                
+                showToast('Dipilih : night mode', 'dark');
             }
+            renderDynamicParticles();
         }
 
         function dismissGuideBanner() {
@@ -768,7 +972,7 @@
 
                 renderTasks();
                 renderTrash();
-                showToast(`Jurusan aktif: ${currentMajor}`);
+                showToast(`Jurusan aktif: ${currentMajor}`, 'success');
             });
         }
 
@@ -804,24 +1008,25 @@
                 document.getElementById('view-record').classList.add('hidden');
                 document.getElementById('view-trash').classList.add('hidden');
 
-                // Reset Sidebar Active State
-                document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
-                document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
-                document.getElementById('nav-trash').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
+                document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-300/50 dark:hover:bg-slate-700/50 transition cursor-pointer";
+                document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-300/50 dark:hover:bg-slate-700/50 transition cursor-pointer";
+                document.getElementById('nav-trash').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-rose-100/60 dark:hover:bg-rose-950/30 hover:text-rose-600 transition cursor-pointer";
 
-                // Reset Mobile Navbar Active State
+                document.getElementById('sidebar-trash-icon').className = "w-4 h-4 text-rose-500 shrink-0";
+                document.getElementById('trash-count').className = "h-5 min-w-[20px] px-1.5 flex items-center justify-center text-[11px] bg-rose-200/80 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 rounded-full font-bold";
+
                 document.getElementById('mobile-nav-tasks').className = "flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer";
                 document.getElementById('mobile-nav-record').className = "flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer";
                 document.getElementById('mobile-nav-trash').className = "flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-rose-500 transition cursor-pointer";
 
                 if (tab === 'tasks') {
                     document.getElementById('view-tasks').classList.remove('hidden');
-                    document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer";
+                    document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-100/70 dark:bg-indigo-950/40 transition cursor-pointer";
                     document.getElementById('mobile-nav-tasks').className = "flex flex-col items-center text-[11px] font-bold text-indigo-600 dark:text-indigo-400 transition cursor-pointer";
                     document.getElementById('header-title').innerText = "Daftar Catatan Perkuliahan";
                 } else if (tab === 'record') {
                     document.getElementById('view-record').classList.remove('hidden');
-                    document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer";
+                    document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-100/70 dark:bg-indigo-950/40 transition cursor-pointer";
                     document.getElementById('mobile-nav-record').className = "flex flex-col items-center text-[11px] font-bold text-indigo-600 dark:text-indigo-400 transition cursor-pointer";
                     document.getElementById('header-title').innerText = "Catatan Suara";
                     
@@ -832,7 +1037,10 @@
                     }
                 } else if (tab === 'trash') {
                     document.getElementById('view-trash').classList.remove('hidden');
-                    document.getElementById('nav-trash').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold text-white bg-rose-600 transition cursor-pointer shadow-xs";
+                    document.getElementById('nav-trash').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition cursor-pointer shadow-xs";
+                    document.getElementById('sidebar-trash-icon').className = "w-4 h-4 text-white shrink-0";
+                    document.getElementById('trash-count').className = "h-5 min-w-[20px] px-1.5 flex items-center justify-center text-[11px] bg-white/20 text-white rounded-full font-bold";
+                    
                     document.getElementById('mobile-nav-trash').className = "flex flex-col items-center text-[11px] font-bold text-rose-600 dark:text-rose-400 transition cursor-pointer";
                     document.getElementById('header-title').innerText = "Sampah";
                     renderTrash();
@@ -873,7 +1081,7 @@
 
             if (filtered.length === 0) {
                 container.innerHTML = `
-                    <div class="col-span-1 sm:col-span-2 text-center py-10 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/80 animate-fade-in-up">
+                    <div class="col-span-1 sm:col-span-2 text-center py-10 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-300/80 dark:border-slate-700/80 animate-fade-in-up">
                         <p class="text-xs text-slate-400 dark:text-slate-500">Belum ada catatan ${currentMajor ? 'untuk jurusan ' + escapeHtml(currentMajor) : ''}.</p>
                     </div>`;
                 return;
@@ -881,7 +1089,7 @@
 
             filtered.forEach((task, index) => {
                 const card = document.createElement('div');
-                card.className = `task-card p-4 rounded-xl border flex flex-col justify-between animate-fade-in-up ${task.completed ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-700/40 opacity-75' : 'bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700/80 shadow-xs'}`;
+                card.className = `task-card p-4 rounded-xl border flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-md cursor-pointer animate-fade-in-up ${task.completed ? 'bg-slate-200/50 dark:bg-slate-800/40 border-slate-300/60 dark:border-slate-700/40 opacity-75' : 'bg-slate-50 dark:bg-slate-800 border-slate-300/80 dark:border-slate-700/80 shadow-2xs'}`;
                 card.style.animationDelay = `${index * 0.04}s`;
                 
                 card.innerHTML = `
@@ -889,13 +1097,13 @@
                         <div class="flex items-start justify-between">
                             <div data-id="${task.id}" class="clickable-task-text cursor-pointer group flex-1 min-w-0 pr-2">
                                 <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition break-words ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${index + 1}. ${escapeHtml(task.title)}</h4>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed group-hover:text-slate-700 dark:group-hover:text-slate-300 transition break-words ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${escapeHtml(task.desc)}</p>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed group-hover:text-slate-800 dark:group-hover:text-slate-300 transition break-words ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${escapeHtml(task.desc)}</p>
                             </div>
                             <div class="flex items-center space-x-1 shrink-0">
                                 <button data-id="${task.id}" class="download-single-btn text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition p-1 cursor-pointer hover:scale-110 active:scale-95" title="Download Catatan Ini">
                                     <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                 </button>
-                                <button data-id="${task.id}" class="edit-btn text-slate-400 hover:text-slate-800 dark:hover:text-white transition p-1 cursor-pointer hover:scale-110 active:scale-95" title="Edit Catatan">
+                                <button data-id="${task.id}" class="edit-btn text-slate-500 hover:text-slate-800 dark:hover:text-white transition p-1 cursor-pointer hover:scale-110 active:scale-95" title="Edit Catatan">
                                     <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 </button>
                                 <button data-id="${task.id}" class="delete-btn text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 transition p-1 cursor-pointer hover:scale-110 active:scale-95" title="Hapus Catatan">
@@ -904,16 +1112,16 @@
                             </div>
                         </div>
 
-                        <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-end">
-                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0">${task.date}</span>
+                        <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-end">
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium shrink-0">${task.date}</span>
                         </div>
                     </div>
 
-                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                        <span class="text-[10px] font-semibold ${task.completed ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}">
+                    <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700/50 flex items-center justify-between">
+                        <span class="text-[10px] font-semibold ${task.completed ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}">
                             ${task.completed ? 'Status: Selesai Dibaca' : 'Status: Belum Dibaca'}
                         </span>
-                        <button data-id="${task.id}" class="toggle-complete-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer active:scale-95 flex items-center space-x-1.5 ${task.completed ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'}">
+                        <button data-id="${task.id}" class="toggle-complete-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer active:scale-95 flex items-center space-x-1.5 ${task.completed ? 'bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-400' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'}">
                             <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${task.completed ? 'M6 18L18 6M6 6l12 12' : 'M5 13l4 4L19 7'}"></path></svg>
                             <span>${task.completed ? 'Batalkan Selesai' : 'Selesai Dibaca'}</span>
                         </button>
@@ -967,7 +1175,7 @@
 
             if (deletedTasks.length === 0) {
                 container.innerHTML = `
-                    <div class="col-span-1 sm:col-span-2 text-center py-10 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/80 animate-fade-in-up">
+                    <div class="col-span-1 sm:col-span-2 text-center py-10 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-300/80 dark:border-slate-700/80 animate-fade-in-up">
                         <p class="text-xs text-slate-400 dark:text-slate-500">Tidak ada catatan di sampah.</p>
                     </div>`;
                 return;
@@ -977,30 +1185,29 @@
             const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
             deletedTasks.forEach((task, index) => {
-                // Hitung sisa hari otomatis
                 const deletedTime = task.deletedAt || now;
                 const elapsed = now - deletedTime;
                 const remainingDays = Math.max(0, Math.ceil((THIRTY_DAYS_MS - elapsed) / (24 * 60 * 60 * 1000)));
 
                 const card = document.createElement('div');
-                card.className = "task-card p-4 rounded-xl border border-rose-100 dark:border-rose-950 bg-rose-50/20 dark:bg-rose-950/20 flex flex-col justify-between animate-fade-in-up";
+                card.className = "task-card p-4 rounded-xl border border-rose-200 dark:border-rose-950 bg-rose-50/40 dark:bg-rose-950/20 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-md animate-fade-in-up";
                 card.style.animationDelay = `${index * 0.04}s`;
                 
                 card.innerHTML = `
                     <div class="min-w-0">
                         <div class="flex items-center justify-between gap-2">
-                            <span class="text-[10px] font-semibold text-rose-500 uppercase tracking-wider truncate">Dari jurusan : ${escapeHtml(task.major)}</span>
-                            <span class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold shrink-0">Hapus otomatis dalam ${remainingDays} hari</span>
+                            <span class="text-[10px] font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider truncate">Dari jurusan : ${escapeHtml(task.major)}</span>
+                            <span class="text-[10px] text-amber-700 dark:text-amber-400 font-semibold shrink-0">Hapus otomatis dalam ${remainingDays} hari</span>
                         </div>
                         <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 mt-1 break-words">${index + 1}. ${escapeHtml(task.title)}</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed break-words">${escapeHtml(task.desc)}</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed break-words">${escapeHtml(task.desc)}</p>
                     </div>
-                    <div class="flex items-center justify-end space-x-2 mt-4 pt-3 border-t border-rose-100/80 dark:border-rose-900/40">
+                    <div class="flex items-center justify-end space-x-2 mt-4 pt-3 border-t border-rose-200/80 dark:border-rose-900/40">
                         <button onclick="restoreTask(${task.id})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg text-xs font-semibold transition cursor-pointer flex items-center space-x-1 shadow-xs shrink-0">
                             <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                             <span>Pulihkan</span>
                         </button>
-                        <button onclick="permanentDeleteTask(${task.id})" class="px-3 py-1.5 bg-rose-100 dark:bg-rose-900/50 hover:bg-rose-200 dark:hover:bg-rose-900 active:scale-95 text-rose-700 dark:text-rose-300 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0">
+                        <button onclick="permanentDeleteTask(${task.id})" class="px-3 py-1.5 bg-rose-200/80 dark:bg-rose-900/50 hover:bg-rose-300 dark:hover:bg-rose-900 active:scale-95 text-rose-800 dark:text-rose-300 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0">
                             Hapus Permanen
                         </button>
                     </div>`;
@@ -1015,7 +1222,7 @@
                 saveToStorage();
                 renderTasks();
                 renderTrash();
-                showToast('Catatan berhasil dipulihkan!');
+                showToast('Catatan berhasil dipulihkan!', 'success');
             });
         }
 
@@ -1030,7 +1237,7 @@
                         saveToStorage();
                         renderTasks();
                         renderTrash();
-                        showToast('Catatan dihapus secara permanen.');
+                        showToast('Catatan dihapus secara permanen.', 'success');
                     });
                 }
             );
@@ -1042,9 +1249,9 @@
 
         function filterStatus(status) {
             currentFilter = status;
-            document.getElementById('filter-all').className = status === 'all' ? "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0" : "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition shrink-0";
-            document.getElementById('filter-pending').className = status === 'pending' ? "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0" : "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition shrink-0";
-            document.getElementById('filter-completed').className = status === 'completed' ? "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0" : "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition shrink-0";
+            document.getElementById('filter-all').className = status === 'all' ? "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0" : "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer transition shrink-0";
+            document.getElementById('filter-pending').className = status === 'pending' ? "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0" : "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer transition shrink-0";
+            document.getElementById('filter-completed').className = status === 'completed' ? "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-indigo-600 text-white cursor-pointer transition shrink-0" : "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer transition shrink-0";
             renderTasks();
         }
 
@@ -1065,7 +1272,7 @@
             tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
             saveToStorage();
             renderTasks();
-            showToast('Status catatan diperbarui!');
+            showToast('Status catatan diperbarui!', 'success');
         }
 
         function openDeleteModal(id) {
@@ -1086,7 +1293,7 @@
                         saveToStorage();
                         renderTasks();
                         renderTrash();
-                        showToast('Catatan dipindahkan ke Sampah');
+                        showToast('Catatan dipindahkan ke Sampah', 'success');
                     });
                 }
             );
@@ -1113,7 +1320,7 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                showToast('Catatan berhasil diunduh!');
+                showToast('Catatan berhasil diunduh!', 'success');
             });
         }
 
@@ -1123,7 +1330,7 @@
             if (SpeechRecognition) {
                 recognition = new SpeechRecognition();
                 recognition.continuous = true;
-                recognition.interimResults = true;
+                recognition.interimResults = false;
                 recognition.lang = 'id-ID';
 
                 recognition.onstart = () => {
@@ -1146,11 +1353,16 @@
                 };
 
                 recognition.onresult = (event) => {
-                    let transcript = '';
-                    for (let i = 0; i < event.results.length; ++i) {
-                        transcript += event.results[i][0].transcript;
+                    let newWords = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            newWords += event.results[i][0].transcript + ' ';
+                        }
                     }
-                    document.getElementById('transcript-result').value = transcript;
+                    if (newWords.trim() !== '') {
+                        finalTranscriptAccumulator += newWords;
+                        document.getElementById('transcript-result').value = finalTranscriptAccumulator.replace(/\s+/g, ' ').trim();
+                    }
                 };
 
                 recognition.onerror = (event) => {
@@ -1161,7 +1373,17 @@
                     }
                 };
 
-                recognition.onend = () => { stopRecording(); };
+                recognition.onend = () => { 
+                    if (isRecording) {
+                        try {
+                            recognition.start();
+                        } catch (e) {
+                            stopRecording();
+                        }
+                    } else {
+                        stopRecording(); 
+                    }
+                };
             }
         }
 
@@ -1178,6 +1400,8 @@
             if (isRecording) {
                 stopRecording();
             } else {
+                finalTranscriptAccumulator = document.getElementById('transcript-result').value.trim();
+                if (finalTranscriptAccumulator !== '') finalTranscriptAccumulator += ' ';
                 try { recognition.start(); } catch (err) { stopRecording(); }
             }
         }
@@ -1208,8 +1432,13 @@
         }
 
         function clearTranscript() {
+            if (isRecording) {
+                stopRecording();
+            }
+            finalTranscriptAccumulator = '';
             document.getElementById('transcript-result').value = '';
             document.getElementById('record-title-input').value = '';
+            showToast('Catatan dibersihkan', 'success');
         }
 
         function saveTranscriptToTask() {
@@ -1253,15 +1482,15 @@
                 document.getElementById('view-tasks').classList.remove('hidden');
                 document.getElementById('view-record').classList.add('hidden');
                 document.getElementById('view-trash').classList.add('hidden');
-                document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 transition cursor-pointer";
+                document.getElementById('nav-tasks').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-100/70 dark:bg-indigo-950/40 transition cursor-pointer";
                 document.getElementById('mobile-nav-tasks').className = "flex flex-col items-center text-[11px] font-bold text-indigo-600 dark:text-indigo-400 transition cursor-pointer";
-                document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition cursor-pointer";
-                document.getElementById('mobile-nav-record').className = "flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer";
+                document.getElementById('nav-record').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-300/50 dark:hover:bg-slate-700/50 transition cursor-pointer";
+                document.getElementById('mobile-nav-record').className = "flex flex-col items-center text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-300/50 dark:hover:bg-slate-700/50 transition cursor-pointer";
                 document.getElementById('header-title').innerText = "Daftar Catatan Perkuliahan";
                 
                 renderTasks();
                 renderTrash();
-                showToast(`Catatan suara berhasil disimpan ke ${currentMajor}!`);
+                showToast(`Catatan suara berhasil disimpan ke ${currentMajor}!`, 'success');
             });
         }
 
@@ -1317,7 +1546,7 @@
             showLoader('Menyimpan perubahan...', () => {
                 if (editId) {
                     tasks = tasks.map(t => t.id === Number(editId) ? { ...t, title: title, desc: desc || 'Tidak ada deskripsi tambahan.' } : t);
-                    showToast('Catatan berhasil diperbarui!');
+                    showToast('Catatan berhasil diperbarui!', 'success');
                 } else {
                     tasks.unshift({
                         id: Date.now(),
@@ -1328,7 +1557,7 @@
                         deleted: false,
                         date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
                     });
-                    showToast('Catatan baru berhasil ditambahkan');
+                    showToast('Catatan baru berhasil ditambahkan', 'success');
                 }
 
                 saveToStorage();
@@ -1338,13 +1567,25 @@
             });
         }
 
-        function showToast(msg) {
+        function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
+            const iconContainer = document.getElementById('toast-icon-container');
             document.getElementById('toast-message').innerText = msg;
+
+            if (type === 'dark') {
+                iconContainer.innerHTML = `<svg class="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`;
+            } else if (type === 'light') {
+                iconContainer.innerHTML = `<svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
+            } else {
+                iconContainer.innerHTML = `<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+            }
+
+            toast.classList.add('flex');
             toast.classList.remove('hidden');
             toast.classList.add('animate-toast-in');
             setTimeout(() => {
                 toast.classList.add('hidden');
+                toast.classList.remove('flex');
                 toast.classList.remove('animate-toast-in');
             }, 3000);
         }
